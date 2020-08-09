@@ -216,13 +216,13 @@ void Statistic::calculatePower(double e_0, double e_l, double e_h)
         p_h = 0;
         if (PLow[k].size() > 0) {
             p_0 += PLow[k][0];
-            for (uint_fast64_t i = 0; i < PLow[k].size(); i++) {
+            for (uint_fast64_t i = 1; i < PLow[k].size(); i++) {
                 p_l += PLow[k][i];
             }
         }
         if (PHigh[k].size() > 0) {
             p_0 += PHigh[k][0];
-            for (uint_fast64_t i = 0; i < PHigh[k].size(); i++) {
+            for (uint_fast64_t i = 1; i < PHigh[k].size(); i++) {
                 p_h += PHigh[k][i];
             }
         }
