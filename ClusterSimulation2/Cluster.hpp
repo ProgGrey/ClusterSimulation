@@ -102,7 +102,8 @@ public:
     void useAlternativeGenertors();
     // Переключение на основной генератор.
     void useStandartGenertors();
-
+    // Синхронизация генераторов случайных чисел
+    void syncGenerators();
     // Инициализация симуляции
     void init(double lambda, double mu_h, double mu_l, double p_h, double p_l, uint64_t servers, const double *p);
 };

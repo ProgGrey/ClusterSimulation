@@ -78,3 +78,9 @@ void Cluster::useStandartGenertors()
     timeLeave.useStandartGenerator();
     timeArrival.useStandartGenerator();
 }
+
+void Cluster::syncGenerators()
+{
+    timeArrival.syncGenerators();
+    timeLeave.syncGenerators();
+}

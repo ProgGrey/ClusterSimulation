@@ -50,8 +50,8 @@ void printResults(double** buf, uint64_t simulations, uint64_t intervals, const 
 
 int main()
 {
-    cout << fixed;
-    cout.precision(6);
+    cerr << fixed;
+    cerr.precision(6);
     // Параметры симуляции
     uint64_t warmingCount, intervalLen, intervalCount, simCounts;
     // Колво потоков
@@ -138,6 +138,7 @@ int main()
     Cluster cl;
     #pragma omp parallel for schedule(dynamic) private(cl)
     for (int k = 0; k < simCounts / 2; k++) {
+        cl.syncGenerators();
         cl.init(lambda, mu_h, mu_l, p_h, p_l, serversCount, p);
         cl.simulate(warmingCount, intervalLen, intervalCount);
         cl.calculatePower(e_0, e_l, e_h);

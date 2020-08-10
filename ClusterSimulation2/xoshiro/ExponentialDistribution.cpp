@@ -66,3 +66,8 @@ void ExponentialDistribution::useStandartGenerator()
 {
 	this->generator = &ExponentialDistribution::gen;
 }
+
+void ExponentialDistribution::syncGenerators()
+{
+	gen1 = gen2;
+}

@@ -13,6 +13,7 @@ public:
 
 	void useAlternativeGenerator();
 	void useStandartGenerator();
+	void syncGenerators();
 private:
 	xoshiro256plus gen1;
 	xoshiro256plus gen2;
