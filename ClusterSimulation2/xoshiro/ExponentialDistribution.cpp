@@ -26,13 +26,27 @@ double ExponentialDistribution::operator()()
 {
 	return (this->*generator)();
 }
+
+// Заменяет ноль на нименьшее число больше нуля.
+// Нужно при генерации случайных чисел, чтобы 
+// генератор Exp не выдал +inf
+inline double removeZero(double a) 
+{
+	// Код минимального большего нуля (денормализованная форма)
+	// NB: Нормализованная не подойдёт.
+	uint64_t code = 0x1;
+	double* p = (double*)&code;
+	double eps = *p;
+	return a + eps;
+}
+
 double ExponentialDistribution::altGen()
 {
 	// Нормализуем генерируемые значения
 	double tmp = gen2();
 	tmp /= max;
 	// Вычислим по методу обратной функции
-	return -log(1 - tmp) / lambda;
+	return -log(removeZero(1 - tmp)) / lambda;
 }
 
 double ExponentialDistribution::gen()
@@ -41,7 +55,7 @@ double ExponentialDistribution::gen()
 	double tmp = gen1();
 	tmp /= max;
 	// Вычислим по методу обратной функции
-	return -log(tmp) / lambda;
+	return -log(removeZero(tmp)) / lambda;
 }
 
 void ExponentialDistribution::useAlternativeGenerator()
