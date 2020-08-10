@@ -63,4 +63,15 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="makefile">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="makeobj.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="build.sh" />
+  </ItemGroup>
 </Project>
