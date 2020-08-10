@@ -110,10 +110,6 @@ int main()
     cout << u8"Введите потребляемую мощность в повышенном режиме: ";
     cin >> e_h;
 
-    // Инициализируем OpenMP
-    omp_set_dynamic(0);
-    omp_set_num_threads(threadsCount);
-
     // Выделим память под результаты опытов
     // Собираем среднее число пользователей в системе и очереди
     // среднее время обработки и в очереди, средняя потребляемая энергия
@@ -139,28 +135,29 @@ int main()
     }
 
     // Запустим симуляцию
-    #pragma omp parallel for schedule(dynamic)
+    Cluster cl;
+    #pragma omp parallel for schedule(dynamic) private(cl)
     for (int k = 0; k < simCounts / 2; k++) {
-        Cluster* cl = new Cluster(lambda, mu_h, mu_l, p_h, p_l, serversCount, p);
-        cl->simulate(warmingCount, intervalLen, intervalCount);
-        cl->calculatePower(e_0, e_l, e_h);
+        cl.init(lambda, mu_h, mu_l, p_h, p_l, serversCount, p);
+        cl.simulate(warmingCount, intervalLen, intervalCount);
+        cl.calculatePower(e_0, e_l, e_h);
         for (int i = 0; i < intervalCount; i++) {
-            Mqr[i][k] = cl->meanAppsInQueue[i];
-            Mr[i][k] = cl->meanAppsInSystem[i];
-            Sr[i][k] = cl->meanProcessingTime[i];
-            Tqr[i][k] = cl->meanWaitingTime[i];
-            Wr[i][k] = cl->meanPower[i];
+            Mqr[i][k] = cl.meanAppsInQueue[i];
+            Mr[i][k] = cl.meanAppsInSystem[i];
+            Sr[i][k] = cl.meanProcessingTime[i];
+            Tqr[i][k] = cl.meanWaitingTime[i];
+            Wr[i][k] = cl.meanPower[i];
         }
-        cl->init(lambda, mu_h, mu_l, p_h, p_l, serversCount, p);
-        cl->useAlternativeGenertors();
-        cl->simulate(warmingCount, intervalLen, intervalCount);
-        cl->calculatePower(e_0, e_l, e_h);
+        cl.init(lambda, mu_h, mu_l, p_h, p_l, serversCount, p);
+        cl.useAlternativeGenertors();
+        cl.simulate(warmingCount, intervalLen, intervalCount);
+        cl.calculatePower(e_0, e_l, e_h);
         for (int i = 0; i < intervalCount; i++) {
-            Mqr[i][k + simCounts / 2] = cl->meanAppsInQueue[i];
-            Mr[i][k + simCounts / 2] = cl->meanAppsInSystem[i];
-            Sr[i][k + simCounts / 2] = cl->meanProcessingTime[i];
-            Tqr[i][k + simCounts / 2] = cl->meanWaitingTime[i];
-            Wr[i][k + simCounts / 2] = cl->meanPower[i];
+            Mqr[i][k + simCounts / 2] = cl.meanAppsInQueue[i];
+            Mr[i][k + simCounts / 2] = cl.meanAppsInSystem[i];
+            Sr[i][k + simCounts / 2] = cl.meanProcessingTime[i];
+            Tqr[i][k + simCounts / 2] = cl.meanWaitingTime[i];
+            Wr[i][k + simCounts / 2] = cl.meanPower[i];
         }
     }
     
