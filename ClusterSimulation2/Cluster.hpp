@@ -3,7 +3,7 @@
 #include "Statistic.hpp"
 #include <deque>
 #include "xoshiro/ExponentialDistribution.hpp"
-#include "ProbabilityTest.hpp"
+#include "xoshiro/ProbabilityTest.hpp"
 
 struct Application
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "xoshiro/xoshiro.hpp"
+#include "xoshiro.hpp"
 #include <random>
 
 class  ProbabilityTest

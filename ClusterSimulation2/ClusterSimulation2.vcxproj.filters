@@ -36,7 +36,7 @@
     <ClCompile Include="xoshiro\xoshiro.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="ProbabilityTest.cpp">
+    <ClCompile Include="xoshiro\ProbabilityTest.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,7 +59,7 @@
     <ClInclude Include="xoshiro\xoshiro.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="ProbabilityTest.hpp">
+    <ClInclude Include="xoshiro\ProbabilityTest.hpp">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

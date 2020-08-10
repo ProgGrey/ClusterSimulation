@@ -176,20 +176,20 @@
   <ItemGroup>
     <ClCompile Include="ClusterSimulation2.cpp" />
     <ClCompile Include="Init.cpp" />
-    <ClCompile Include="ProbabilityTest.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="Statistic.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="xoshiro\ExponentialDistribution.cpp" />
+    <ClCompile Include="xoshiro\ProbabilityTest.cpp" />
     <ClCompile Include="xoshiro\xoshiro.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cluster.hpp" />
     <ClInclude Include="DynamicArray.hpp" />
-    <ClInclude Include="ProbabilityTest.hpp" />
     <ClInclude Include="Statistic.hpp" />
     <ClInclude Include="Timer.hpp" />
     <ClInclude Include="xoshiro\ExponentialDistribution.hpp" />
+    <ClInclude Include="xoshiro\ProbabilityTest.hpp" />
     <ClInclude Include="xoshiro\xoshiro.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
