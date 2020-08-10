@@ -9,6 +9,7 @@ Timer::Timer(double speed)
 	id = 0;
 	time = 0;
 	sumTime = 0;
+	timeToArrival = -1;
 	this->speed = speed;
 }
 
@@ -20,34 +21,57 @@ Timer::~Timer()
 // Добавляет новое событие в очередь.
 void Timer::addEvent(double time, uint64_t ID)
 {
-	Event tmp;
-	tmp.id = ID;
-	tmp.time = time;
-	// Вставляем событие в список так, чтобы он всегда был упорядочен
-	auto it = events->begin();
-	while ((it != events->end()) && (it->time < time)) {
-		it++;
+	if (ID == 0) {
+		timeToArrival = time;
 	}
-	events->emplace(it, tmp);
+	else {
+		Event tmp;
+		tmp.id = ID;
+		tmp.time = time;
+		// Вставляем событие в список так, чтобы он всегда был упорядочен
+		auto it = events->begin();
+		while ((it != events->end()) && (it->time < time)) {
+			it++;
+		}
+		events->emplace(it, tmp);
+	}
 }
 
 // Переход к следующему событию
 bool Timer::nextEvent()
 {
-	if (!events->empty()) {
-		// Поскольку список всегда упорядочен, то самый первый его элемент 
-		// будет с наименьшим временем
-		auto min = events->front();
-		// Сместимся к этому событию
-		time = min.time;
-		sumTime = min.timeSum + time;
-		id = min.id;
-		events->pop_front();
+	if ((!events->empty()) || (timeToArrival >= 0)) {
+		if (!events->empty()) {
+			// Найдём событие ухода с минимальным временем
+			// Поскольку список всегда упорядочен, то самый первый его элемент 
+		    // будет с наименьшим временем
+			auto min = events->front();
+			// сравним с событием прихода
+			if ((timeToArrival >= 0) && (min.time > timeToArrival)) {
+				// Сместимся к этому событию
+				time = timeToArrival;
+				sumTime = 0;
+				id = 0;
+				timeToArrival = -1;
+			} else {
+				// Сместимся к этому событию
+				time = min.time;
+				sumTime = min.timeSum + time;
+				id = min.id;
+				events->pop_front();
+			}
+		} else if ((events->empty()) && (timeToArrival >= 0)){
+			time = timeToArrival;
+			sumTime = 0;
+			id = 0;
+			timeToArrival = -1;
+		}
 		// Пересчитаем время для оставшихся событий
 		for (auto i = events->begin(); i != events->end(); i++) {
 			i->time -= time;
 			i->timeSum += time;
 		}
+		timeToArrival -= time;
 		return true;
 	}
 	else {
@@ -73,30 +97,25 @@ uint64_t Timer::eventId() {
 void Timer::recalculateTime(double newSpeed)
 {
 	if (!events->empty()) {
-		// Указатель на событие прибытия новой заявки
-		deque<Event>::iterator arrival;
-		double time;
 		// Пересчитаем время для событий
 		for (auto i = events->begin(); i != events->end(); i++) {
 			// Время пересчитываем, только если это уход заявки из системы
-			if (i->id != 0) {
-				i->time = i->time * speed / newSpeed;
-			} else{
-				arrival = i;
-				time = i->time;
-			}
+			i->time = i->time * speed / newSpeed;
 		}
-		events->erase(arrival);
-		addEvent(time, 0);
 	}
 	
 	speed = newSpeed;
 }
 
-//  Сколько ещё событий в списке
+//  Сколько ещё событий в списке (включая текущее ушедшее)
 uint64_t Timer::size()
 {
-	return events->size();
+	if (id > 0) {
+		return events->size() + 1;
+	} else {
+		return events->size();
+	}
+	
 }
 
 // Для отладки

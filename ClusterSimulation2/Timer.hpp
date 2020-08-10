@@ -20,6 +20,8 @@ private:
     double sumTime;
     std::deque<Event>* events;
     double speed;
+
+    double timeToArrival;
 public:
 	Timer(double speed);
 	~Timer();
