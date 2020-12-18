@@ -3,6 +3,20 @@
 #include <iostream>
 using namespace std;
 
+StateDist::StateDist(uint64_t serverCount)
+{
+    // »нциализируем с помощью calloc потому что мне лень вручную обнул€ть массивы
+    n[0] = (double*)calloc(serverCount, sizeof(double));
+    n[1] = (double*)calloc(serverCount, sizeof(double));
+    x_t = 0;
+}
+
+StateDist::~StateDist()
+{
+    free(n[0]);
+    free(n[1]);
+}
+
 void Cluster::calculateMetrics()
 {
     // ќбщее врем€ симул€ции
