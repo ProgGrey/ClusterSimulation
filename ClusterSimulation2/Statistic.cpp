@@ -3,20 +3,6 @@
 #include <iostream>
 using namespace std;
 
-StateDist::StateDist(uint64_t serverCount)
-{
-    // Инциализируем с помощью calloc потому что мне лень вручную обнулять массивы
-    n[0] = (double*)calloc(serverCount, sizeof(double));
-    n[1] = (double*)calloc(serverCount, sizeof(double));
-    x_t = 0;
-}
-
-StateDist::~StateDist()
-{
-    free(n[0]);
-    free(n[1]);
-}
-
 void Cluster::calculateMetrics()
 {
     // Общее время симуляции
@@ -26,6 +12,10 @@ void Cluster::calculateMetrics()
         *stat->meanProcessingTime_p += eventsB->timeSum();
         stat->leaveApplicationsCount++;
     }
+
+    stat->p_x_stat[stat->p][(eventsB->size() + queue->size())] += eventsB->passedTime();
+
+
     // Вектора:
     if (isLowMode) {
         (*stat->PLow_p)[(eventsB->size() + queue->size())] += eventsB->passedTime();
@@ -58,6 +48,11 @@ Statistic::Statistic()
     PHigh = NULL;
     meanPower = NULL;
     p = 0;
+    // Новая статистика
+    p_x_stat = NULL;
+    p_n_stat[0] = NULL;
+    p_n_stat[1] = NULL;
+    normalizePointers();
 }
 
 Statistic::Statistic(int64_t intervalCount)
@@ -75,6 +70,12 @@ Statistic::Statistic(int64_t intervalCount)
     PqHigh = new DynamicArraySimple<double, 100000000>[intervalCount];
     PLow = new DynamicArraySimple<double, 100000000>[intervalCount];
     PHigh = new DynamicArraySimple<double, 100000000>[intervalCount];
+
+    // Новая статистика
+    p_n_stat[0] = new DynamicArraySimple<double, 100000000>[intervalCount];
+    p_n_stat[1] = new DynamicArraySimple<double, 100000000>[intervalCount];
+    p_x_stat = new DynamicArraySimple<double, 100000000>[intervalCount];
+
     p = 0;
     if (intervalCount > 0) {
         simulationTime[0] = 0;
@@ -82,8 +83,8 @@ Statistic::Statistic(int64_t intervalCount)
         meanWaitingTime[0] = 0;
         meanAppsInQueue[0] = 0;
         meanAppsInSystem[0] = 0;
-        normalizePointers();
     }
+    normalizePointers();
 }
 
 Statistic::~Statistic()
@@ -98,11 +99,14 @@ Statistic::~Statistic()
     delete[] PLow;
     delete[] PHigh;
     delete[] meanPower;
+    delete[] p_n_stat[0];
+    delete[] p_n_stat[1];
+    delete[] p_x_stat;
 }
 
 void Statistic::finalizeCalculation()
 {
-    // Среденее время обслуживания
+    // Среднее время обслуживания
     meanProcessingTime[p] /= leaveApplicationsCount;
     // Среднее время ожидания в очереди
     meanWaitingTime[p] /= applicationsInQueueCountSum;
@@ -120,6 +124,19 @@ void Statistic::finalizeCalculation()
     for (int k = 0; k < PHigh[p].size(); k++) {
         PHigh[p][k] /= simulationTime[p];
     }
+    
+    // Матрицы новой статистики
+    for (uint_fast64_t k = 0; k < p_n_stat[0][p].size(); k++) {
+        p_n_stat[0][p][k] /= simulationTime[p];
+    }
+    for (uint_fast64_t k = 0; k < p_n_stat[1][p].size(); k++) {
+        p_n_stat[1][p][k] /= simulationTime[p];
+    }
+    for (uint_fast64_t k = 0; k < p_x_stat[p].size(); k++) {
+        p_x_stat[p][k] /= simulationTime[p];
+    }
+    // TODO: полностью перейти на новую статистику
+
     // Среднее число заявок в очереди
     meanAppsInQueue[p] = 0;
     for (int k = 0; k < PqLow[p].size(); k++) {
@@ -130,11 +147,8 @@ void Statistic::finalizeCalculation()
     }
     // Среднее число заявок в системе
     meanAppsInSystem[p] = 0;
-    for (int k = 0; k < PLow[p].size(); k++) {
-        meanAppsInSystem[p] += PLow[p][k] * k;
-    }
-    for (int k = 0; k < PHigh[p].size(); k++) {
-        meanAppsInSystem[p] += PHigh[p][k] * k;
+    for (int k = 0; k < p_x_stat[p].size(); k++) {
+        meanAppsInSystem[p] += p_x_stat[p][k] * k;
     }
 }
 
@@ -152,6 +166,12 @@ void Statistic::nextInterval()
         PqHigh[pp] = PqHigh[p];
         PLow[pp] = PLow[p];
         PHigh[pp] = PHigh[p];
+
+        // Новая статистика:
+        p_n_stat[0][pp] = p_n_stat[0][p];
+        p_n_stat[1][pp] = p_n_stat[1][p];
+        p_x_stat[pp] = p_x_stat[p];
+
         // Завершаем вычисление параметров
         finalizeCalculation();
         p++;
