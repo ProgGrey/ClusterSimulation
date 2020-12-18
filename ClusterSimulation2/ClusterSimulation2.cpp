@@ -162,6 +162,7 @@ int main()
         }
     }
     
+    // TODO: Надо ещё вывести распределение для системы.
     printResults(Mqr, simCounts, intervalCount, "E[Mq]", "D[Mq]");
     printResults(Mr, simCounts, intervalCount, "E[M]", "D[M]");
     printResults(Sr, simCounts, intervalCount, "E[S]", "D[S]");
