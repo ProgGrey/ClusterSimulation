@@ -19,6 +19,8 @@ private:
     // Средняя потребляемая мощность
     double* meanPower;
     
+    // Количество серверов в кластере
+    uint64_t servers;
 
     // Вектор вероятностей для очереди
     DynamicArraySimple<double, 100000000>* PqLow;
@@ -32,7 +34,7 @@ private:
     void normalizePointers();
 public:
 	Statistic();
-    Statistic(int64_t intervalCount);
+    Statistic(int64_t intervalCount, uint64_t servCount);
 	~Statistic();
     
     // Перейти к следующему интервалу

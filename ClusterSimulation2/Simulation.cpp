@@ -111,7 +111,7 @@ void Cluster::simulate(uint64_t warmingCount, uint64_t simCount, uint64_t interv
     }
     isWarming = false;
     delete stat;
-    stat = new Statistic(intervalsCount);
+    stat = new Statistic(intervalsCount, servers);
     // Запустим симуляцию
     for (uint64_t i = 0; i < intervalsCount; i++) {
         for (uint64_t k = 0; k < simCount; k++) {

@@ -55,7 +55,7 @@ Statistic::Statistic()
     normalizePointers();
 }
 
-Statistic::Statistic(int64_t intervalCount)
+Statistic::Statistic(int64_t intervalCount, uint64_t servCount)
 {
     this->maxIntervalIndex = intervalCount - 1;
     simulationTime = new double[intervalCount];
@@ -70,6 +70,8 @@ Statistic::Statistic(int64_t intervalCount)
     PqHigh = new DynamicArraySimple<double, 100000000>[intervalCount];
     PLow = new DynamicArraySimple<double, 100000000>[intervalCount];
     PHigh = new DynamicArraySimple<double, 100000000>[intervalCount];
+
+    servers = servCount;
 
     // Новая статистика
     p_n_stat[0] = new DynamicArraySimple<double, 100000000>[intervalCount];
