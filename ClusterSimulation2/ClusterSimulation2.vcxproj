@@ -176,6 +176,7 @@
   <ItemGroup>
     <ClCompile Include="ClusterSimulation2.cpp" />
     <ClCompile Include="Init.cpp" />
+    <ClCompile Include="Phase.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="Statistic.cpp" />
     <ClCompile Include="Timer.cpp" />

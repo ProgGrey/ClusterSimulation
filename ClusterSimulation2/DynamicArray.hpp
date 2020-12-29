@@ -52,7 +52,17 @@ public:
 			return buffer[index];
 		}
 	}
-	
+	// Конструктор копирования
+	DynamicArraySimple<T, maxSize>(const DynamicArraySimple<T, maxSize>& initialize)
+	{
+		// Создаём копию объекта
+		len = initialize.len;
+		delete[] buffer;
+		buffer = new T[len];
+		memset(buffer, 0, len * sizeof(T));
+		memcpy(buffer, initialize.buffer, len * sizeof(T));
+	}
+
 	// Оператор присваивания
 	DynamicArraySimple<T, maxSize>& operator=(const DynamicArraySimple<T, maxSize>& right) {
 		//проверка на самоприсваивание

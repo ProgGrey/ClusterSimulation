@@ -2,6 +2,29 @@
 #include <cstdint>
 #include "DynamicArray.hpp"
 
+class Phase {
+private:
+    uint64_t serversCount;
+public:
+    // ¬еро€тность того, что система будет находитс€ в указанном режиме работы
+    // TODO: от этого избавимс€, поскольку это равно сумме по всем p_n
+    DynamicArraySimple<double, 100000000> p_mu_stat;
+
+    // ѕерва€ координата - номер i последней за€вки в системе
+    // ¬тора€ координата - требуемое этой за€вке число серверов
+    // “реть€ координата - число за€вок в системе
+    int *p_n_stat;
+
+    // ќператор присваивани€
+    Phase& operator = (const Phase& right);
+    //  онструктор копировани€
+    Phase(const Phase& obj);
+
+    Phase();
+    explicit Phase(uint64_t servCount);
+    ~Phase();
+};
+
 class Statistic {
 private:
     //  ол-во интервалов
@@ -87,7 +110,6 @@ public:
     DynamicArraySimple<double, 100000000>* p_x_stat;
     // –аспределение количества серверов, которое потребует i-€ старейша€ за€вка
     
-    // ¬еро€тность того, что система будет находитс€ в указанном режиме работы
-    DynamicArraySimple<double, 100000000>* p_mu_stat[2];
+    Phase* p_phase_stat[2];
 
 };
