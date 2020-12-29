@@ -1,5 +1,6 @@
 #include "Cluster.hpp"
 #include "Statistic.hpp"
+#include <omp.h>
 #include <iostream>
 using namespace std;
 
@@ -14,7 +15,13 @@ void Cluster::calculateMetrics()
     }
 
     stat->p_x_stat[stat->p][(eventsB->size() + queue->size())] += eventsB->passedTime();
-
+    
+    if (isLowMode)
+    {
+        stat->p_mu_stat[0][stat->p][(eventsB->size() + queue->size())] += eventsB->passedTime();
+    }else {
+        stat->p_mu_stat[1][stat->p][(eventsB->size() + queue->size())] += eventsB->passedTime();
+    }
 
     // Вектора:
     if (isLowMode) {
@@ -50,8 +57,8 @@ Statistic::Statistic()
     p = 0;
     // Новая статистика
     p_x_stat = NULL;
-    p_n_stat[0] = NULL;
-    p_n_stat[1] = NULL;
+    p_mu_stat[0] = NULL;
+    p_mu_stat[1] = NULL;
     normalizePointers();
 }
 
@@ -74,8 +81,8 @@ Statistic::Statistic(int64_t intervalCount, uint64_t servCount)
     servers = servCount;
 
     // Новая статистика
-    p_n_stat[0] = new DynamicArraySimple<double, 100000000>[intervalCount];
-    p_n_stat[1] = new DynamicArraySimple<double, 100000000>[intervalCount];
+    p_mu_stat[0] = new DynamicArraySimple<double, 100000000>[intervalCount];
+    p_mu_stat[1] = new DynamicArraySimple<double, 100000000>[intervalCount];
     p_x_stat = new DynamicArraySimple<double, 100000000>[intervalCount];
 
     p = 0;
@@ -101,8 +108,8 @@ Statistic::~Statistic()
     delete[] PLow;
     delete[] PHigh;
     delete[] meanPower;
-    delete[] p_n_stat[0];
-    delete[] p_n_stat[1];
+    delete[] p_mu_stat[0];
+    delete[] p_mu_stat[1];
     delete[] p_x_stat;
 }
 
@@ -128,11 +135,11 @@ void Statistic::finalizeCalculation()
     }
     
     // Матрицы новой статистики
-    for (uint_fast64_t k = 0; k < p_n_stat[0][p].size(); k++) {
-        p_n_stat[0][p][k] /= simulationTime[p];
+    for (uint_fast64_t k = 0; k < p_x_stat[p].size(); k++) {
+        p_mu_stat[0][p][k] /= (p_x_stat[p][k] == 0 ? 1 : p_x_stat[p][k]);
     }
-    for (uint_fast64_t k = 0; k < p_n_stat[1][p].size(); k++) {
-        p_n_stat[1][p][k] /= simulationTime[p];
+    for (uint_fast64_t k = 0; k < p_x_stat[p].size(); k++) {
+        p_mu_stat[1][p][k] /= (p_x_stat[p][k] == 0 ? 1 : p_x_stat[p][k]);
     }
     for (uint_fast64_t k = 0; k < p_x_stat[p].size(); k++) {
         p_x_stat[p][k] /= simulationTime[p];
@@ -170,8 +177,8 @@ void Statistic::nextInterval()
         PHigh[pp] = PHigh[p];
 
         // Новая статистика:
-        p_n_stat[0][pp] = p_n_stat[0][p];
-        p_n_stat[1][pp] = p_n_stat[1][p];
+        p_mu_stat[0][pp] = p_mu_stat[0][p];
+        p_mu_stat[1][pp] = p_mu_stat[1][p];
         p_x_stat[pp] = p_x_stat[p];
 
         // Завершаем вычисление параметров
@@ -247,20 +254,14 @@ void Statistic::calculatePower(double e_0, double e_l, double e_h)
     double p_0, p_l, p_h;
     // По всем интервалам
     for (uint_fast64_t k = 0; k <= maxIntervalIndex; k++) {
-        p_0 = 0;
+        p_0 = p_x_stat[k][0];
         p_l = 0;
         p_h = 0;
-        if (PLow[k].size() > 0) {
-            p_0 += PLow[k][0];
-            for (uint_fast64_t i = 1; i < PLow[k].size(); i++) {
-                p_l += PLow[k][i];
-            }
+        for (uint_fast64_t i = 1; i < p_mu_stat[0][k].size(); i++) {
+            p_l += p_mu_stat[0][k][i] * p_x_stat[k][i];
         }
-        if (PHigh[k].size() > 0) {
-            p_0 += PHigh[k][0];
-            for (uint_fast64_t i = 1; i < PHigh[k].size(); i++) {
-                p_h += PHigh[k][i];
-            }
+        for (uint_fast64_t i = 1; i < p_mu_stat[1][k].size(); i++) {
+            p_h += p_mu_stat[1][k][i] * p_x_stat[k][i];
         }
         meanPower[k] = p_0 * e_0 + p_l * e_l + p_h * e_h;
     }

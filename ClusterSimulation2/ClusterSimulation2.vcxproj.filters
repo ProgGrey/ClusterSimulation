@@ -70,6 +70,12 @@
     <Text Include="makeobj.txt">
       <Filter>Файлы ресурсов</Filter>
     </Text>
+    <Text Include="input.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="output.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="build.sh" />

@@ -193,8 +193,10 @@
     <ClInclude Include="xoshiro\xoshiro.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="input.txt" />
     <Text Include="makefile" />
     <Text Include="makeobj.txt" />
+    <Text Include="output.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build.sh" />
