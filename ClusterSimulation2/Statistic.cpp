@@ -20,6 +20,16 @@ void Cluster::calculateMetrics()
     if (isLowMode)
     {
         stat->p_phase_stat[0][stat->p].p_mu_stat[(eventsB->size() + queue->size())] += eventsB->passedTime();
+        uint64_t k = 0;
+        // Определим количество заявок в системе. Если сейчас наступило событие прихода, то число заявок в 
+        // обработке будет равно eventsB->size(). Если это был уход, то число заявок в обработке равно 
+        // eventsB->size() - 1. Но, с учётом только что ушедшей заявки их число равно eventsB->size().
+        uint64_t appsInProcessing = (eventsB->eventId() == 0 ? eventsB->size() : eventsB->size() - 1);
+        while (k < min(servers, queue->size() + appsInProcessing))
+        {
+
+            k++;
+        }
     }else {
         stat->p_phase_stat[1][stat->p].p_mu_stat[(eventsB->size() + queue->size())] += eventsB->passedTime();
     }

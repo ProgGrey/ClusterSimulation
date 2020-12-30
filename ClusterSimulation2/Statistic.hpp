@@ -1,28 +1,45 @@
 #pragma once
 #include <cstdint>
+#include <vector>
 #include "DynamicArray.hpp"
 
-class Phase {
+class Phase
+{
 private:
-    uint64_t serversCount;
+    double zero;
+    // Количество серверов
+    uint8_t servCount;
+    // Размер столбца матрицы
+    uint64_t elSize;
+    // количество столбцов в матрице
+    uint64_t elCount;
+    std::vector<double*> p_n_stat;
+    inline static uint64_t pow(uint64_t a, uint8_t p);
+
+    // Превращает этот объект в копию переданного. ACHTUNG: будет утечка памяти, если this не пустое.
+    void doppelgang(const Phase& obj);
+
 public:
+    explicit Phase(uint8_t serversCount);
+    Phase();
+    ~Phase();
+
+    // Конструктор  копирования
+    Phase(const Phase& obj);
+    // Оператор приравнивания
+    Phase& operator=(const Phase& right);
+
+    // Доступ к элементам
+    inline double& operator()(uint64_t x, uint64_t y);
+    // Печать состояний
+    void print();
+
+    // Вычисление позиции в массиве по вектору состояния
+    void addTime(uint64_t* arr, uint64_t x, double time);
+
     // Вероятность того, что система будет находится в указанном режиме работы
     // TODO: от этого избавимся, поскольку это равно сумме по всем p_n
     DynamicArraySimple<double, 100000000> p_mu_stat;
-
-    // Первая координата - номер i последней заявки в системе
-    // Вторая координата - требуемое этой заявке число серверов
-    // Третья координата - число заявок в системе
-    int *p_n_stat;
-
-    // Оператор присваивания
-    Phase& operator = (const Phase& right);
-    // Конструктор копирования
-    Phase(const Phase& obj);
-
-    Phase();
-    explicit Phase(uint64_t servCount);
-    ~Phase();
 };
 
 class Statistic {

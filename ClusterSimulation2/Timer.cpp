@@ -126,3 +126,20 @@ void Timer::printAll()
 	}
 	std::cout << endl;
 }
+
+uint64_t* Timer::getOldestApps(uint64_t& appsCount)
+{
+	if (id == 0) {
+		appsCount = 0;
+	} else{
+		appsCount = 1;
+		oldestApps[0] = id;
+	}
+	if (!events->empty()) {
+		for (auto i = events->begin(); i != events->end(); i++) {
+			oldestApps[appsCount] = i->id;
+			appsCount++;
+		}
+	}
+	return oldestApps;
+}
