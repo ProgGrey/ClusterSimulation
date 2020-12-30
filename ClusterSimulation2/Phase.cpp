@@ -29,18 +29,18 @@ void Phase::doppelgang(const Phase& obj)
 
     if (elSize != 0) {
         // Скопируем массив
-        uint64_t k = 1;
+        unsigned int k = 1;
         p_n_stat.reserve(elCount);
         for (; k < servCount; k++)
         {
-            uint64_t memSize = sizeof(double) * pow(k, (uint8_t)k);
+            unsigned int memSize = sizeof(double) * pow(k, (uint8_t)k);
             double* tmp = (double*)malloc(memSize);
             memcpy(tmp, obj.p_n_stat[k], memSize);
             p_n_stat[k] = tmp;
         }
         for (; k < elCount; k++)
         {
-            uint64_t memSize = sizeof(double) * elSize;
+            unsigned int memSize = sizeof(double) * elSize;
             double* tmp = (double*)malloc(memSize);
             memcpy(tmp, obj.p_n_stat[k], memSize);
             p_n_stat[k] = tmp;
@@ -62,15 +62,15 @@ Phase& Phase::operator=(const Phase& right)
 
 Phase::~Phase()
 {
-    for (uint_fast64_t k = 1; k < elCount; k++) {
+    for (unsigned int k = 1; k < elCount; k++) {
         free(p_n_stat[k]);
     }
     p_n_stat.clear();
 }
 
-inline uint64_t Phase::pow(uint64_t a, uint8_t p)
+inline unsigned int Phase::pow(unsigned int a, uint8_t p)
 {
-    uint64_t res = a;
+    unsigned int res = a;
     while (p > 1)
     {
         if (p & 1) {
@@ -87,9 +87,9 @@ inline uint64_t Phase::pow(uint64_t a, uint8_t p)
     }
     return res;
 }
-inline double& Phase::operator()(uint64_t x, uint64_t y)
+inline double& Phase::operator()(unsigned int x, unsigned int y)
 {
-    uint64_t maxY;
+    unsigned int maxY;
     if (x < servCount) {
         maxY = pow(x, (uint8_t)x);
     }
@@ -114,19 +114,19 @@ inline double& Phase::operator()(uint64_t x, uint64_t y)
 
 void Phase::print()
 {
-    for (uint64_t i = 0; i < elSize; i++) {
-        for (uint64_t k = 0; k < elCount; k++) {
+    for (unsigned int i = 0; i < elSize; i++) {
+        for (unsigned int k = 0; k < elCount; k++) {
             cout << (*this)(k, i) << "\t";
         }
         cout << endl;
     }
 }
 
-void Phase::addTime(uint64_t* arr, uint64_t x, double time)
+void Phase::addTime(uint8_t* arr, unsigned int x, double time)
 {
     // Вычислим позицию состояния в столбце
     uint64_t bound = servCount > x ? x : servCount;
-    uint64_t y = 0;
+    unsigned int y = 0;
     for (uint_fast64_t k = 0; k < (bound - 1); k++) {
         y += (arr[k] - 1);
         y *= servCount;

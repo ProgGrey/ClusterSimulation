@@ -11,14 +11,14 @@
 
 using namespace std;
 
-void printResults(double** buf, uint64_t simulations, uint64_t intervals, const char* ms, const char *ds)
+void printResults(double** buf, uint64_t simulations, unsigned int intervals, const char* ms, const char *ds)
 {
     // Память под матожидание и дисперсию
     double* M = new double[intervals];
     double* D = new double[intervals];
 
     // Вычислим матожидание
-    for (int k = 0; k < intervals; k++) {
+    for (unsigned int k = 0; k < intervals; k++) {
         M[k] = 0;
         for (int i = 0; i < simulations; i++) {
             M[k] += buf[k][i];
@@ -26,7 +26,7 @@ void printResults(double** buf, uint64_t simulations, uint64_t intervals, const 
         M[k] /= simulations;
     }
     // вычислим дисперсию
-    for (int k = 0; k < intervals; k++) {
+    for (unsigned int k = 0; k < intervals; k++) {
         D[k] = 0;
         for (int i = 0; i < simulations; i++) {
             D[k] += (buf[k][i] - M[k]) * (buf[k][i] - M[k]);
@@ -35,12 +35,12 @@ void printResults(double** buf, uint64_t simulations, uint64_t intervals, const 
     }
     //Выведим на экран:
     cerr << ms << " = c(";
-    for (int k = 0; k < intervals - 1; k++) {
+    for (unsigned int k = 0; k < intervals - 1; k++) {
         cerr << M[k] << ", ";
     }
     cerr << M[intervals - 1] << ")\n";
     cerr << ds << " = c(";
-    for (int k = 0; k < intervals - 1; k++) {
+    for (unsigned int k = 0; k < intervals - 1; k++) {
         cerr << D[k] << ", ";
     }
     cerr << D[intervals - 1] << ")\n";
@@ -53,12 +53,12 @@ int main()
     cerr << fixed;
     cerr.precision(6);
     // Параметры симуляции
-    uint64_t warmingCount, intervalLen, intervalCount, simCounts;
+    unsigned int warmingCount, intervalLen, intervalCount, simCounts;
     // Колво потоков
     int threadsCount = 1;
     // Параметры системы
     double lambda, mu_h, mu_l, p_h, p_l;
-    uint64_t serversCount;
+    uint16_t serversCount;
     // распределение вероятностей
     double* p;
     // Энергопотребление
@@ -88,7 +88,7 @@ int main()
         return 0;
     }
     if (serversCount > 1) {
-        p = new double(serversCount - 1);
+        p = new double[serversCount - 1];
         cout << u8"Введите распределение для числа заявок через пробел\n NB: количество чисел должно быть на 1 меньше, чем серверов: ";
         for (int k = 0; k < (serversCount - 1); k++) {
             cin >> p[k];
@@ -118,46 +118,46 @@ int main()
     // Собираем среднее число пользователей в системе и очереди
     // среднее время обработки и в очереди, средняя потребляемая энергия
     double** Sr = new double*[intervalCount];
-    for (int k = 0; k < intervalCount; k++) {
+    for (unsigned int k = 0; k < intervalCount; k++) {
         Sr[k] = new double[simCounts];
     }
     double** Tqr = new double* [intervalCount];
-    for (int k = 0; k < intervalCount; k++) {
+    for (unsigned int k = 0; k < intervalCount; k++) {
         Tqr[k] = new double[simCounts];
     }
     double** Mr = new double* [intervalCount];
-    for (int k = 0; k < intervalCount; k++) {
+    for (unsigned int k = 0; k < intervalCount; k++) {
         Mr[k] = new double[simCounts];
     }
     double** Mqr = new double* [intervalCount];
-    for (int k = 0; k < intervalCount; k++) {
+    for (unsigned int k = 0; k < intervalCount; k++) {
         Mqr[k] = new double[simCounts];
     }
     double** Wr = new double* [intervalCount];
-    for (int k = 0; k < intervalCount; k++) {
+    for (unsigned int k = 0; k < intervalCount; k++) {
         Wr[k] = new double[simCounts];
     }
 
     // Запустим симуляцию
     Cluster cl;
     #pragma omp parallel for schedule(dynamic) private(cl)
-    for (int k = 0; k < simCounts / 2; k++) {
+    for (int k = 0; k < (int)(simCounts / 2); k++) {
         cl.syncGenerators();
-        cl.init(lambda, mu_h, mu_l, p_h, p_l, serversCount, p);
+        cl.init(lambda, mu_h, mu_l, p_h, p_l, (uint8_t)serversCount, p);
         cl.simulate(warmingCount, intervalLen, intervalCount);
         cl.calculatePower(e_0, e_l, e_h);
-        for (int i = 0; i < intervalCount; i++) {
+        for (unsigned int i = 0; i < intervalCount; i++) {
             Mqr[i][k] = cl.meanAppsInQueue[i];
             Mr[i][k] = cl.meanAppsInSystem[i];
             Sr[i][k] = cl.meanProcessingTime[i];
             Tqr[i][k] = cl.meanWaitingTime[i];
             Wr[i][k] = cl.meanPower[i];
         }
-        cl.init(lambda, mu_h, mu_l, p_h, p_l, serversCount, p);
+        cl.init(lambda, mu_h, mu_l, p_h, p_l, (uint8_t)serversCount, p);
         cl.useAlternativeGenertors();
         cl.simulate(warmingCount, intervalLen, intervalCount);
         cl.calculatePower(e_0, e_l, e_h);
-        for (int i = 0; i < intervalCount; i++) {
+        for (unsigned int i = 0; i < intervalCount; i++) {
             Mqr[i][k + simCounts / 2] = cl.meanAppsInQueue[i];
             Mr[i][k + simCounts / 2] = cl.meanAppsInSystem[i];
             Sr[i][k + simCounts / 2] = cl.meanProcessingTime[i];

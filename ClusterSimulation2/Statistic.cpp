@@ -15,32 +15,32 @@ void Cluster::calculateMetrics()
         stat->leaveApplicationsCount++;
     }
 
-    stat->p_x_stat[stat->p][(eventsB->size() + queue->size())] += eventsB->passedTime();
+    stat->p_x_stat[stat->p][(unsigned int)(eventsB->size() + queue->size())] += eventsB->passedTime();
     
     if (isLowMode)
     {
-        stat->p_phase_stat[0][stat->p].p_mu_stat[(eventsB->size() + queue->size())] += eventsB->passedTime();
+        stat->p_phase_stat[0][stat->p].p_mu_stat[(unsigned int)(eventsB->size() + queue->size())] += eventsB->passedTime();
         uint64_t k = 0;
         // Определим количество заявок в системе. Если сейчас наступило событие прихода, то число заявок в 
         // обработке будет равно eventsB->size(). Если это был уход, то число заявок в обработке равно 
         // eventsB->size() - 1. Но, с учётом только что ушедшей заявки их число равно eventsB->size().
         uint64_t appsInProcessing = (eventsB->eventId() == 0 ? eventsB->size() : eventsB->size() - 1);
-        while (k < min(servers, queue->size() + appsInProcessing))
+        while (k < min((uint64_t)servers, queue->size() + appsInProcessing))
         {
 
             k++;
         }
     }else {
-        stat->p_phase_stat[1][stat->p].p_mu_stat[(eventsB->size() + queue->size())] += eventsB->passedTime();
+        stat->p_phase_stat[1][stat->p].p_mu_stat[(unsigned int)(eventsB->size() + (uint64_t)queue->size())] += eventsB->passedTime();
     }
 
     // Вектора:
     if (isLowMode) {
-        (*stat->PLow_p)[(eventsB->size() + queue->size())] += eventsB->passedTime();
-        (*stat->PqLow_p)[queue->size()] += eventsB->passedTime();
+        (*stat->PLow_p)[(unsigned int)(eventsB->size() + queue->size())] += eventsB->passedTime();
+        (*stat->PqLow_p)[(unsigned int)queue->size()] += eventsB->passedTime();
     }else{
-        (*stat->PHigh_p)[(eventsB->size() + queue->size())] += eventsB->passedTime();
-        (*stat->PqHigh_p)[queue->size()] += eventsB->passedTime();
+        (*stat->PHigh_p)[(unsigned int)(eventsB->size() + queue->size())] += eventsB->passedTime();
+        (*stat->PqHigh_p)[(unsigned int)queue->size()] += eventsB->passedTime();
     }
 }
 
@@ -74,7 +74,7 @@ Statistic::Statistic()
     normalizePointers();
 }
 
-Statistic::Statistic(int64_t intervalCount, uint64_t servCount)
+Statistic::Statistic(unsigned int intervalCount, uint8_t servCount)
 {
     this->maxIntervalIndex = intervalCount - 1;
     simulationTime = new double[intervalCount];
@@ -95,7 +95,7 @@ Statistic::Statistic(int64_t intervalCount, uint64_t servCount)
     // Новая статистика
     p_phase_stat[0] = new Phase[intervalCount];
     p_phase_stat[1] = new Phase[intervalCount];
-    for (uint_fast64_t k = 0; k < intervalCount; k++) {
+    for (int_fast64_t k = 0; k < intervalCount; k++) {
         p_phase_stat[0][k] = Phase(servCount);
         p_phase_stat[1][k] = Phase(servCount);
     }
@@ -136,50 +136,50 @@ void Statistic::finalizeCalculation()
     // Среднее время ожидания в очереди
     meanWaitingTime[p] /= applicationsInQueueCountSum;
     // Вектора для числа пользователей в очереди
-    for (int k = 0; k < PqLow[p].size(); k++) {
+    for (unsigned int k = 0; k < PqLow[p].size(); k++) {
         PqLow[p][k] /= simulationTime[p];
     }
-    for (int k = 0; k < PqHigh[p].size(); k++) {
+    for (unsigned int k = 0; k < PqHigh[p].size(); k++) {
         PqHigh[p][k] /= simulationTime[p];
     }
     // Вектора для числа пользователей в системе
-    for (int k = 0; k < PLow[p].size(); k++) {
+    for (unsigned int k = 0; k < PLow[p].size(); k++) {
         PLow[p][k] /= simulationTime[p];
     }
-    for (int k = 0; k < PHigh[p].size(); k++) {
+    for (unsigned int k = 0; k < PHigh[p].size(); k++) {
         PHigh[p][k] /= simulationTime[p];
     }
     
     // Матрицы новой статистики
-    for (uint_fast64_t k = 0; k < p_x_stat[p].size(); k++) {
+    for (unsigned int  k = 0; k < p_x_stat[p].size(); k++) {
         p_phase_stat[0][p].p_mu_stat[k] /= (p_x_stat[p][k] == 0 ? 1 : p_x_stat[p][k]);
     }
-    for (uint_fast64_t k = 0; k < p_x_stat[p].size(); k++) {
+    for (unsigned int  k = 0; k < p_x_stat[p].size(); k++) {
         p_phase_stat[1][p].p_mu_stat[k] /= (p_x_stat[p][k] == 0 ? 1 : p_x_stat[p][k]);
     }
-    for (uint_fast64_t k = 0; k < p_x_stat[p].size(); k++) {
+    for (unsigned int  k = 0; k < p_x_stat[p].size(); k++) {
         p_x_stat[p][k] /= simulationTime[p];
     }
     // TODO: полностью перейти на новую статистику
 
     // Среднее число заявок в очереди
     meanAppsInQueue[p] = 0;
-    for (int k = 0; k < PqLow[p].size(); k++) {
+    for (unsigned int k = 0; k < PqLow[p].size(); k++) {
         meanAppsInQueue[p] += PqLow[p][k] * k;
     }
-    for (int k = 0; k < PqHigh[p].size(); k++) {
+    for (unsigned int k = 0; k < PqHigh[p].size(); k++) {
         meanAppsInQueue[p] += PqHigh[p][k] * k;
     }
     // Среднее число заявок в системе
     meanAppsInSystem[p] = 0;
-    for (int k = 0; k < p_x_stat[p].size(); k++) {
+    for (unsigned int k = 0; k < p_x_stat[p].size(); k++) {
         meanAppsInSystem[p] += p_x_stat[p][k] * k;
     }
 }
 
 void Statistic::nextInterval()
 {
-    if (p < maxIntervalIndex) {
+    if ((int64_t)p < maxIntervalIndex) {
         uint64_t pp = p + 1;
         // Копируем в новый интервал всю собранную к данному моменту статистику
         simulationTime[pp] = simulationTime[p];
@@ -241,44 +241,43 @@ void Statistic::normalizePointers()
 }
 
 
-const double* Statistic::getMeanAppsInQueue()
+const double* Statistic::getMeanAppsInQueue()  const
 {
     return meanAppsInQueue;
 }
 
-const double* Statistic::getMeanAppsInSystem()
+const double* Statistic::getMeanAppsInSystem() const
 {
     return meanAppsInSystem;
 }
-const double* Statistic::getMeanProcessingTime()
+const double* Statistic::getMeanProcessingTime() const
 {
     return Statistic::meanProcessingTime;
 }
 
-const double* Statistic::getMeanWaitingTime()
+const double* Statistic::getMeanWaitingTime() const
 {
     return meanWaitingTime;
 }
 
-const double* Statistic::getMeanPower()
+const double* Statistic::getMeanPower() const
 {
     return meanPower;
 }
 
 void Statistic::calculatePower(double e_0, double e_l, double e_h)
 {
-    double p_0, p_l, p_h;
+    double p_l, p_h;
     // По всем интервалам
-    for (uint_fast64_t k = 0; k <= maxIntervalIndex; k++) {
-        p_0 = p_x_stat[k][0];
+    for (int64_t k = 0; k <= maxIntervalIndex; k++) {
         p_l = 0;
         p_h = 0;
-        for (uint_fast64_t i = 1; i < p_phase_stat[0][k].p_mu_stat.size(); i++) {
+        for (unsigned int i = 1; i < p_phase_stat[0][k].p_mu_stat.size(); i++) {
             p_l += p_phase_stat[0][k].p_mu_stat[i] * p_x_stat[k][i];
         }
-        for (uint_fast64_t i = 1; i < p_phase_stat[1][k].p_mu_stat.size(); i++) {
+        for (unsigned int i = 1; i < p_phase_stat[1][k].p_mu_stat.size(); i++) {
             p_h += p_phase_stat[1][k].p_mu_stat[i] * p_x_stat[k][i];
         }
-        meanPower[k] = p_0 * e_0 + p_l * e_l + p_h * e_h;
+        meanPower[k] = p_x_stat[k][0] * e_0 + p_l * e_l + p_h * e_h;
     }
 }

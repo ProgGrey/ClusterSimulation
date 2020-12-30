@@ -79,7 +79,7 @@ public:
 	}
 
 	// Размер массива
-	unsigned int size() {
+	inline unsigned int size() const {
 		return len;
 	}
 };

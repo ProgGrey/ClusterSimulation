@@ -7,7 +7,7 @@ struct Event
     // Сколько времени осталось до события
     double time;
     // ID события
-    uint64_t id;
+    uint8_t id;
     // Склолько времени уже в обработке
     double timeSum = 0;
 };
@@ -19,9 +19,9 @@ private:
     // Наша симуляция в любом случае не вытянет больше 
     // 15 серверов, поскольку описание состояния является
     // вектором размера n^n, где n - число серверов.
-    uint64_t oldestApps[16];
+    uint8_t oldestApps[16];
 
-    uint64_t id;
+    uint8_t id;
     double time;
     double sumTime;
     std::deque<Event>* events;
@@ -29,26 +29,26 @@ private:
 
     double timeToArrival;
 public:
-	Timer(double speed);
+	explicit Timer(double speed);
 	~Timer();
 
     // Добавляет новое событие в очередь.
-    void addEvent(double time, uint64_t id);
+    void addEvent(double time, uint8_t ID);
     // Переход к следующему событию
     bool nextEvent();
     // Сколько времени прошло с преыдущего события
-    double passedTime();
-    // Сколько времени всего прошло с момента поступления события для этого события
-    double timeSum();
+    double passedTime() const;
+    // Сколько времени всего прошло с момента поступления первого события для этого события
+    double timeSum() const;
     // id события
-    uint64_t eventId();
+    uint8_t eventId() const;
     // функция для пересчёта времени
     void recalculateTime(double newSpeed);
     //  Сколько ещё событий в списке
-    uint64_t size();
+    uint64_t size() const;
     // Печать всех событий (для отладки)
     void printAll();
 
     // Вернёт массив с количеством серверов, которое требуют старейшие заявки.
-    uint64_t* getOldestApps(uint64_t& appsCount);
+    uint8_t* getOldestApps(uint64_t& appsCount);
 };

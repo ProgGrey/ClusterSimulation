@@ -3,21 +3,11 @@ using namespace std;
 
 Cluster::Cluster()
 {
-    queue = NULL;
-    eventsB = NULL;
-    stat = NULL;
-    meanAppsInQueue = NULL;
-    this->p = NULL;
     init(1, 1, 1, 1, 1, 1, NULL);
 }
 
-Cluster::Cluster(double lambda, double mu_h, double mu_l, double p_h, double p_l, uint64_t servers, const double* p)
+Cluster::Cluster(double lambda, double mu_h, double mu_l, double p_h, double p_l, uint8_t servers, const double* p)
 {
-    queue = NULL;
-    eventsB = NULL;
-    stat = NULL;
-    meanAppsInQueue = NULL;
-    this->p = NULL;
     init(lambda, mu_h, mu_l, p_h, p_l, servers, p);
 }
 
@@ -28,8 +18,17 @@ Cluster::~Cluster() {
     delete[] p;
 }
 
-void Cluster::init(double lambda, double mu_h, double mu_l, double p_h, double p_l, uint64_t servers, const double* p)
+void Cluster::init(double lambda, double mu_h, double mu_l, double p_h, double p_l, uint8_t servers, const double* p)
 {
+    queue = NULL;
+    eventsB = NULL;
+    stat = NULL;
+    meanAppsInQueue = NULL;
+    meanAppsInSystem = NULL;
+    meanProcessingTime = NULL;
+    meanWaitingTime = NULL;
+    meanPower = NULL;
+    this->p = NULL;
     // запомним параметры симуляции
     this->lambda = lambda;
     this->mu_h = mu_h;

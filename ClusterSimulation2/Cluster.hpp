@@ -10,7 +10,7 @@ struct Application
     // Насколько давно пришла заявка
     double time = 0;
     // Сколько нужно узлов
-    uint64_t cores;
+    uint8_t cores;
 };
 
 
@@ -51,14 +51,14 @@ private:
     double mu_l;
     double p_h;
     double p_l;
-    uint64_t servers;
+    uint8_t servers;
     double* p;
     // Сколько серверов свободно
-    uint64_t freeServers;
+    uint8_t freeServers;
 
     // Генерация кол-ва серверов, необходимых заявке
     xoshiro256plus coresGen;
-    uint64_t calculateCores();
+    uint8_t calculateCores();
 
     // Подсчёт необходимых метрик
     void calculateMetrics();
@@ -71,12 +71,12 @@ private:
 
 public:
     Cluster();
-    Cluster(double lambda, double mu_h, double mu_l, double p_h, double p_l, uint64_t servers, const double* p);
+    Cluster(double lambda, double mu_h, double mu_l, double p_h, double p_l, uint8_t servers, const double* p);
     ~Cluster();
 
     // Запуск симуляции
     // Второй параметр - прогрев: сколько из SimCount не собирать статистику
-    void simulate(uint64_t warmingCount, uint64_t simCount, uint64_t intervalsCount);
+    void simulate(uint64_t warmingCount, uint64_t simCount, unsigned int intervalsCount);
 
     // Проверка условия стационарности
     //bool isStable();
@@ -105,5 +105,5 @@ public:
     // Синхронизация генераторов случайных чисел
     void syncGenerators();
     // Инициализация симуляции
-    void init(double lambda, double mu_h, double mu_l, double p_h, double p_l, uint64_t servers, const double *p);
+    void init(double lambda, double mu_h, double mu_l, double p_h, double p_l, uint8_t servers, const double *p);
 };

@@ -6,7 +6,7 @@ class ExponentialDistribution
 {
 public:
 	ExponentialDistribution();
-	ExponentialDistribution(double lambda);
+	explicit ExponentialDistribution(double lambda);
 	
 	double lambda;
 	double operator()();

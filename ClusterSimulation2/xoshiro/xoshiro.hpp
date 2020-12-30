@@ -17,7 +17,7 @@ public:
 	// конструктор по умолчанию
 	xoshiro256plus();
 	// Конструктор, устанавливающий зерно
-	xoshiro256plus(uint64_t s);
+	explicit xoshiro256plus(uint64_t s);
 private:
 	uint64_t data[4];
 };

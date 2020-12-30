@@ -10,11 +10,11 @@ private:
     // Количество серверов
     uint8_t servCount;
     // Размер столбца матрицы
-    uint64_t elSize;
+    unsigned int elSize;
     // количество столбцов в матрице
-    uint64_t elCount;
+    unsigned int elCount;
     std::vector<double*> p_n_stat;
-    inline static uint64_t pow(uint64_t a, uint8_t p);
+    inline static unsigned int pow(unsigned int a, uint8_t p);
 
     // Превращает этот объект в копию переданного. ACHTUNG: будет утечка памяти, если this не пустое.
     void doppelgang(const Phase& obj);
@@ -30,12 +30,12 @@ public:
     Phase& operator=(const Phase& right);
 
     // Доступ к элементам
-    inline double& operator()(uint64_t x, uint64_t y);
+    inline double& operator()(unsigned int x, unsigned int y);
     // Печать состояний
     void print();
 
     // Вычисление позиции в массиве по вектору состояния
-    void addTime(uint64_t* arr, uint64_t x, double time);
+    void addTime(uint8_t* arr, unsigned int x, double time);
 
     // Вероятность того, что система будет находится в указанном режиме работы
     // TODO: от этого избавимся, поскольку это равно сумме по всем p_n
@@ -74,7 +74,7 @@ private:
     void normalizePointers();
 public:
 	Statistic();
-    Statistic(int64_t intervalCount, uint64_t servCount);
+    Statistic(unsigned int intervalCount, uint8_t servCount);
 	~Statistic();
     
     // Перейти к следующему интервалу
@@ -106,14 +106,14 @@ public:
     DynamicArraySimple<double, 100000000>* PHigh_p;
 
     // Вернёт вектор среднего числа заявок в очереди
-    const double* getMeanAppsInQueue();
+    const double* getMeanAppsInQueue() const;
 
-    const double* getMeanAppsInSystem();
-    const double* getMeanProcessingTime();
-    const double* getMeanWaitingTime();
+    const double* getMeanAppsInSystem() const;
+    const double* getMeanProcessingTime() const;
+    const double* getMeanWaitingTime() const;
     
     // Энергия
-    const double* getMeanPower();
+    const double* getMeanPower() const;
     void calculatePower(double e_0, double e_l, double e_h);
 
     // Индекс текущего интервала

@@ -1,4 +1,5 @@
 #include "ExponentialDistribution.hpp"
+#include <climits>
 
 ExponentialDistribution::ExponentialDistribution()
 {
@@ -6,19 +7,19 @@ ExponentialDistribution::ExponentialDistribution()
 	uint64_t seed = rd();
 	gen1.seed(seed);
 	gen2.seed(seed);
-	max = gen1.max();
+	max = (double)gen1.max();
 	lambda = 1;
 	this->generator = &ExponentialDistribution::gen;
 }
 
-ExponentialDistribution::ExponentialDistribution(double l)
+ExponentialDistribution::ExponentialDistribution(double lambda)
 {
 	std::random_device rd;
 	uint64_t seed = rd();
 	gen1.seed(seed);
 	gen2.seed(seed);
-	max = gen1.max();
-	lambda = l;
+	max = (double)gen1.max();
+	this->lambda = lambda;
 	this->generator = &ExponentialDistribution::gen;
 }
 
@@ -32,18 +33,14 @@ double ExponentialDistribution::operator()()
 // генератор Exp не выдал +inf
 inline double removeZero(double a) 
 {
-	// Код минимального большего нуля (денормализованная форма)
-	// NB: Нормализованная не подойдёт.
-	uint64_t code = 0x1;
-	double* p = (double*)&code;
-	double eps = *p;
+	double eps = DBL_TRUE_MIN;
 	return a + eps;
 }
 
 double ExponentialDistribution::altGen()
 {
 	// Нормализуем генерируемые значения
-	double tmp = gen2();
+	double tmp = (double)gen2();
 	tmp /= max;
 	// Вычислим по методу обратной функции
 	return -log(removeZero(1 - tmp)) / lambda;
@@ -52,7 +49,7 @@ double ExponentialDistribution::altGen()
 double ExponentialDistribution::gen()
 {
 	// Нормализуем генерируемые значения
-	double tmp = gen1();
+	double tmp = (double)gen1();
 	tmp /= max;
 	// Вычислим по методу обратной функции
 	return -log(removeZero(tmp)) / lambda;

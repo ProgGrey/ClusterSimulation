@@ -10,6 +10,7 @@ Timer::Timer(double speed)
 	time = 0;
 	sumTime = 0;
 	timeToArrival = -1;
+	memset(oldestApps, 0, sizeof(oldestApps));
 	this->speed = speed;
 }
 
@@ -19,7 +20,7 @@ Timer::~Timer()
 }
 
 // Добавляет новое событие в очередь.
-void Timer::addEvent(double time, uint64_t ID)
+void Timer::addEvent(double time, uint8_t ID)
 {
 	if (ID == 0) {
 		timeToArrival = time;
@@ -80,16 +81,17 @@ bool Timer::nextEvent()
 }
 
 // Функции, возвращающие текущее состояние времени и id события
-double Timer::passedTime()
+double Timer::passedTime() const
 {
 	return time;
 }
-double Timer::timeSum()
+double Timer::timeSum() const
 {
 	return sumTime;
 }
 
-uint64_t Timer::eventId() {
+uint8_t Timer::eventId() const
+{
 	return id;
 }
 
@@ -108,7 +110,7 @@ void Timer::recalculateTime(double newSpeed)
 }
 
 //  Сколько ещё событий в списке (включая текущее ушедшее)
-uint64_t Timer::size()
+uint64_t Timer::size() const
 {
 	if (id > 0) {
 		return events->size() + 1;
@@ -127,7 +129,7 @@ void Timer::printAll()
 	std::cout << endl;
 }
 
-uint64_t* Timer::getOldestApps(uint64_t& appsCount)
+uint8_t* Timer::getOldestApps(uint64_t& appsCount)
 {
 	if (id == 0) {
 		appsCount = 0;

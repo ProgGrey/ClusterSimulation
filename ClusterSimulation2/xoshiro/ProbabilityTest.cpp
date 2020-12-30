@@ -5,13 +5,13 @@ ProbabilityTest::ProbabilityTest()
 	std::random_device rd;
 	uint64_t seed = rd();
 	gen.seed(seed);
-	max = gen.max();
+	max = (double)gen.max();
 }
 
 bool ProbabilityTest::operator()(double p)
 {
 	// Ќормализуем генерируемые значени€
-	double tmp = gen();
+	double tmp = (double)gen();
 	tmp /= max;
 	// √енерируем true с веро€тностью p
 	// и false с веро€тностью 1-p

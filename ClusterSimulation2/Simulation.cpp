@@ -2,20 +2,19 @@
 
 using namespace std;
 
-uint64_t Cluster::calculateCores()
+uint8_t Cluster::calculateCores()
 {
     if (p != NULL) {
         // Нормализуем генерируемые значения
-        double tmp = coresGen();
+        double tmp = (double)coresGen();
         tmp /= coresGen.max();
-        for (uint64_t k = 0; k < servers - 1; k++){
+        for (uint8_t k = 0; k < servers - 1; k++){
             tmp -= p[k];
             if (tmp <= 0.0) {
                 return k + 1;
-            }
-            return servers;
+            }            
         }
-
+        return servers;
     }
     return 1;
 }
@@ -84,7 +83,7 @@ void Cluster::toHighMode()
 }
 
 // Симуляция
-void Cluster::simulate(uint64_t warmingCount, uint64_t simCount, uint64_t intervalsCount)
+void Cluster::simulate(uint64_t warmingCount, uint64_t simCount, unsigned int intervalsCount)
 {
     // Добавим событие прибытия первой заявки
     eventsB->addEvent(timeArrival(), 0);
@@ -113,7 +112,7 @@ void Cluster::simulate(uint64_t warmingCount, uint64_t simCount, uint64_t interv
     delete stat;
     stat = new Statistic(intervalsCount, servers);
     // Запустим симуляцию
-    for (uint64_t i = 0; i < intervalsCount; i++) {
+    for (uint64_t j = 0; j < intervalsCount; j++) {
         for (uint64_t k = 0; k < simCount; k++) {
             // Перейдём к следующему событию
             eventsB->nextEvent();
