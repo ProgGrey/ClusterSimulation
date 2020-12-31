@@ -8,4 +8,4 @@ bin:
 	mkdir bin
 
 clean:
-	rm ./obj/*.o ./bin/ClusterSimulation
+	rm ./obj/*.o ./bin/ClusterSimulation ./obj/makefile

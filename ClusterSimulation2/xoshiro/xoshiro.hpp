@@ -7,9 +7,9 @@ class  xoshiro256plus
 {
 public:
 	// Минимальноезначение
-	uint64_t min();
+	static uint64_t min();
 	// Максимальное значение
-	uint64_t max();
+	static uint64_t max();
 	// Установка зерна генератора
 	void seed(uint64_t s);
 	// Генерация числа

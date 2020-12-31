@@ -34,7 +34,7 @@ public:
     Phase& operator=(const Phase& right);
 
     // Доступ к элементам
-    inline double& operator()(unsigned int x, unsigned int y);
+    double& operator()(unsigned int x, unsigned int y);
     // Печать состояний
     void print();
 

@@ -84,7 +84,7 @@ inline unsigned int Phase::pow(unsigned int a, uint8_t p)
     }
     return res;
 }
-inline double& Phase::operator()(unsigned int x, unsigned int y)
+double& Phase::operator()(unsigned int x, unsigned int y)
 {
     unsigned int maxY;
     if (x < servCount) {

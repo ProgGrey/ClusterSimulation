@@ -1,5 +1,5 @@
 #include "ExponentialDistribution.hpp"
-#include <climits>
+#include <float.h>
 
 ExponentialDistribution::ExponentialDistribution()
 {

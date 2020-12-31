@@ -1,11 +1,8 @@
 CC = clang++
-CFLAGS = -O2 -march=native -flto -fopenmp -std=c++11
+CFLAGS = -O2 -march=native -flto -fopenmp -std=c++17
 
-HEADERS = Cluster.hpp DynamicArray.hpp Statistic.hpp Timer.hpp
-RANDHEADERS = ExponentialDistribution.hpp ProbabilityTest.hpp xoshiro.hpp
-
-all: Main.o Init.o Simulation.o Statistic.o Timer.o ExponentialDistribution.o ProbabilityTest.o xoshiro.o
-	$(CC) $(CFLAGS) Main.o Init.o Simulation.o Statistic.o Timer.o ExponentialDistribution.o ProbabilityTest.o xoshiro.o -o ../bin/ClusterSimulation
+all: Main.o Init.o Simulation.o Statistic.o Timer.o Phase.o ExponentialDistribution.o ProbabilityTest.o xoshiro.o 
+	$(CC) $(CFLAGS) Main.o Init.o Simulation.o Statistic.o Timer.o Phase.o ExponentialDistribution.o ProbabilityTest.o xoshiro.o -o ../bin/ClusterSimulation
 
 Main.o: ../ClusterSimulation2.cpp
 	$(CC) $(CFLAGS) -c  ../ClusterSimulation2.cpp -o Main.o
@@ -21,6 +18,9 @@ Statistic.o: ../Statistic.cpp
 
 Timer.o: ../Timer.cpp
 	$(CC) $(CFLAGS) -c ../Timer.cpp -o Timer.o
+
+Phase.o: ../Phase.cpp
+	$(CC) $(CFLAGS) -c ../Phase.cpp -o Phase.o
 
 
 ExponentialDistribution.o: ../xoshiro/ExponentialDistribution.cpp
