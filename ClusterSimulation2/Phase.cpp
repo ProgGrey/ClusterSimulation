@@ -11,7 +11,6 @@ Phase& Phase::operator=(const Phase& right)
     elSize = right.elSize;
     servCount = right.servCount;
     zero = 0;
-    p_mu_stat = right.p_mu_stat;
     p_n_stat = (double**)malloc(sizeof(double*) * arrSize);
     //в цикле копируем все массивы
     for (unsigned int k = 0; k < arrSize; k++) {
@@ -27,7 +26,6 @@ Phase::Phase(const Phase& obj)
     elSize = obj.elSize;
     servCount = obj.servCount;
     zero = 0;
-    p_mu_stat = obj.p_mu_stat;
     p_n_stat = (double**)malloc(sizeof(double*) * arrSize);
     //в цикле копируем все массивы
     for (unsigned int k = 0; k < arrSize; k++) {
@@ -139,4 +137,9 @@ void Phase::addTime(uint8_t* arr, unsigned int x, double time)
 unsigned int Phase::getColumnSize()const
 {
     return elSize;
+}
+
+unsigned int Phase::size() const
+{
+    return arrSize;
 }

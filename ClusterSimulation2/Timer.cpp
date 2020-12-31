@@ -110,7 +110,7 @@ void Timer::recalculateTime(double newSpeed)
 }
 
 //  Сколько ещё событий в списке (включая текущее ушедшее)
-unsigned int Timer::size() const
+size_t Timer::size() const
 {
 	if (id > 0) {
 		return events->size() + 1;

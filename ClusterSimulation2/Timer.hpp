@@ -5,9 +5,9 @@
 struct Event
 {
     // Сколько времени осталось до события
-    double time;
+    double time = 0;
     // ID события
-    uint8_t id;
+    uint8_t id = 0;
     // Склолько времени уже в обработке
     double timeSum = 0;
 };
@@ -45,7 +45,7 @@ public:
     // функция для пересчёта времени
     void recalculateTime(double newSpeed);
     //  Сколько ещё событий в списке
-    unsigned int size() const;
+    size_t size() const;
     // Печать всех событий (для отладки)
     void printAll();
 

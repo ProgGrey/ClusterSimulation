@@ -44,9 +44,8 @@ public:
     // Количество элементов в столце матрицы
     unsigned int getColumnSize() const;
 
-    // Вероятность того, что система будет находится в указанном режиме работы
-    // TODO: от этого избавимся, поскольку это равно сумме по всем p_n
-    DynamicArraySimple<double, 100000000> p_mu_stat;
+    // Количество элементов в массиве
+    unsigned int size() const;
 };
 
 class Statistic {
@@ -72,10 +71,6 @@ private:
     // Вектор вероятностей для очереди
     DynamicArraySimple<double, 100000000>* PqLow;
     DynamicArraySimple<double, 100000000>* PqHigh;
-
-    // Вектор вероятностей для системы
-    DynamicArraySimple<double, 100000000>* PLow;
-    DynamicArraySimple<double, 100000000>* PHigh;
 
     // Приведение указателей к адекватному состоянию
     void normalizePointers();
@@ -108,9 +103,6 @@ public:
     // Вектор вероятностей для очереди
     DynamicArraySimple<double, 100000000>* PqLow_p;
     DynamicArraySimple<double, 100000000>* PqHigh_p;
-    // Вектор вероятностей для системы
-    DynamicArraySimple<double, 100000000>* PLow_p;
-    DynamicArraySimple<double, 100000000>* PHigh_p;
 
     // Вернёт вектор среднего числа заявок в очереди
     const double* getMeanAppsInQueue() const;

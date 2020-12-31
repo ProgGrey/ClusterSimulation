@@ -22,7 +22,7 @@ void Cluster::calculateMetrics()
     // Если сейчас наступило событие прихода, то число заявок в обработке будет равно eventsB->size(), поскольку добавится 
     // заявка в обработку может только после этой функции. Если это был уход, то число заявок в обработке равно 
     // eventsB->size() - 1. Но, с учётом только что ушедшей заявки их число равно eventsB->size().
-    unsigned int vecLen = eventsB->size() + queue->size();
+    size_t vecLen = eventsB->size() + queue->size();
     if (vecLen > servers)
         vecLen = servers;
     // Запросим вектор текущих состояний у таймера. Этот вектор гарантировано будет нужной нам длины. Удалять его не надо.
@@ -38,20 +38,16 @@ void Cluster::calculateMetrics()
 
     if (isLowMode)
     {
-        stat->p_phase_stat[0][stat->p].addTime(tmp, eventsB->size() + queue->size(), eventsB->passedTime());
-        stat->p_phase_stat[0][stat->p].p_mu_stat[(unsigned int)(eventsB->size() + queue->size())] += eventsB->passedTime();
+        stat->p_phase_stat[0][stat->p].addTime(tmp, (unsigned int)(eventsB->size() + queue->size()), eventsB->passedTime());
         
     }else {
-        stat->p_phase_stat[1][stat->p].addTime(tmp, eventsB->size() + queue->size(), eventsB->passedTime());
-        stat->p_phase_stat[1][stat->p].p_mu_stat[(unsigned int)(eventsB->size() + (uint64_t)queue->size())] += eventsB->passedTime();
+        stat->p_phase_stat[1][stat->p].addTime(tmp, (unsigned int)(eventsB->size() + queue->size()), eventsB->passedTime());
     }
 
     // Вектора:
     if (isLowMode) {
-        (*stat->PLow_p)[(unsigned int)(eventsB->size() + queue->size())] += eventsB->passedTime();
         (*stat->PqLow_p)[(unsigned int)queue->size()] += eventsB->passedTime();
     }else{
-        (*stat->PHigh_p)[(unsigned int)(eventsB->size() + queue->size())] += eventsB->passedTime();
         (*stat->PqHigh_p)[(unsigned int)queue->size()] += eventsB->passedTime();
     }
 }
@@ -74,8 +70,6 @@ Statistic::Statistic()
     meanAppsInSystem = NULL;
     PqLow = NULL;
     PqHigh = NULL;
-    PLow = NULL;
-    PHigh = NULL;
     meanPower = NULL;
     p = 0;
     servers = 1;
@@ -99,8 +93,6 @@ Statistic::Statistic(unsigned int intervalCount, uint8_t servCount)
     meanPower = new double[intervalCount];
     PqLow = new DynamicArraySimple<double, 100000000>[intervalCount];
     PqHigh = new DynamicArraySimple<double, 100000000>[intervalCount];
-    PLow = new DynamicArraySimple<double, 100000000>[intervalCount];
-    PHigh = new DynamicArraySimple<double, 100000000>[intervalCount];
 
     servers = servCount;
 
@@ -133,8 +125,6 @@ Statistic::~Statistic()
     delete[] meanAppsInSystem;
     delete[] PqLow;
     delete[] PqHigh;
-    delete[] PLow;
-    delete[] PHigh;
     delete[] meanPower;
     delete[] p_phase_stat[0];
     delete[] p_phase_stat[1];
@@ -154,36 +144,21 @@ void Statistic::finalizeCalculation()
     for (unsigned int k = 0; k < PqHigh[p].size(); k++) {
         PqHigh[p][k] /= simulationTime[p];
     }
-    // Вектора для числа пользователей в системе
-    for (unsigned int k = 0; k < PLow[p].size(); k++) {
-        PLow[p][k] /= simulationTime[p];
-    }
-    for (unsigned int k = 0; k < PHigh[p].size(); k++) {
-        PHigh[p][k] /= simulationTime[p];
-    }
     
     // Матрицы новой статистики
-    //p_phase_stat[0][p].print();
-    //cout << "***" << endl;
     for (unsigned int  k = 1; k < p_x_stat[p].size(); k++) {
         for (unsigned int i = 0; i < p_phase_stat[0][p].getColumnSize(); i++) {
             p_phase_stat[0][p](k, i) /= (p_x_stat[p][k] == 0 ? 1 : p_x_stat[p][k]);
         }
-        p_phase_stat[0][p].p_mu_stat[k] /= (p_x_stat[p][k] == 0 ? 1 : p_x_stat[p][k]);
     }
-    //p_phase_stat[0][p].print();
-    //cout << "####" << endl;
-    //
     for (unsigned int  k = 1; k < p_x_stat[p].size(); k++) {
         for (unsigned int i = 0; i < p_phase_stat[1][p].getColumnSize(); i++) {
             p_phase_stat[1][p](k, i) /= (p_x_stat[p][k] == 0 ? 1 : p_x_stat[p][k]);
         }
-        p_phase_stat[1][p].p_mu_stat[k] /= (p_x_stat[p][k] == 0 ? 1 : p_x_stat[p][k]);
     }
     for (unsigned int  k = 0; k < p_x_stat[p].size(); k++) {
         p_x_stat[p][k] /= simulationTime[p];
     }
-    // TODO: полностью перейти на новую статистику
 
     // Среднее число заявок в очереди
     meanAppsInQueue[p] = 0;
@@ -212,8 +187,6 @@ void Statistic::nextInterval()
         meanAppsInSystem[pp] = meanAppsInSystem[p];
         PqLow[pp] = PqLow[p];
         PqHigh[pp] = PqHigh[p];
-        PLow[pp] = PLow[p];
-        PHigh[pp] = PHigh[p];
 
         // Новая статистика:
         p_phase_stat[0][pp] = p_phase_stat[0][p];
@@ -259,8 +232,6 @@ void Statistic::normalizePointers()
     meanAppsInSystem_p = &meanAppsInSystem[p];
     PqHigh_p = &PqHigh[p];
     PqLow_p = &PqLow[p];
-    PHigh_p = &PHigh[p];
-    PLow_p = &PLow[p];
 }
 
 
@@ -295,12 +266,12 @@ void Statistic::calculatePower(double e_0, double e_l, double e_h)
     for (int64_t k = 0; k <= maxIntervalIndex; k++) {
         p_l = 0;
         p_h = 0;
-        for (unsigned int i = 1; i < p_phase_stat[0][k].p_mu_stat.size(); i++) {
+        for (unsigned int i = 1; i < p_phase_stat[0][k].size(); i++) {
             for (unsigned int j = 0; j < p_phase_stat[0][k].getColumnSize(); j++) {
                 p_l += p_phase_stat[0][k](i, j) * p_x_stat[k][i];
             }
         }
-        for (unsigned int i = 1; i < p_phase_stat[1][k].p_mu_stat.size(); i++) {
+        for (unsigned int i = 1; i < p_phase_stat[1][k].size(); i++) {
             for (unsigned int j = 0; j < p_phase_stat[1][k].getColumnSize(); j++) {
                 p_h += p_phase_stat[1][k](i, j) * p_x_stat[k][i];
             }
