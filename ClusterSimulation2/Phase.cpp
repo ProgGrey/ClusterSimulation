@@ -3,69 +3,68 @@
 
 using namespace std;
 
+#define computeElementsNumber(x) (((x) >= (servCount)) ? (elSize) : (pow(x,x)))
+
+Phase& Phase::operator=(const Phase& right)
+{
+    arrSize = right.arrSize;
+    elSize = right.elSize;
+    servCount = right.servCount;
+    zero = 0;
+    p_mu_stat = right.p_mu_stat;
+    p_n_stat = (double**)malloc(sizeof(double*) * arrSize);
+    //в цикле копируем все массивы
+    for (unsigned int k = 0; k < arrSize; k++) {
+        p_n_stat[k] = (double*)malloc(computeElementsNumber(k) * sizeof(double));
+        memcpy(p_n_stat[k], right.p_n_stat[k], computeElementsNumber(k) * sizeof(double));
+    }
+    return *this;
+}
+
+Phase::Phase(const Phase& obj)
+{
+    arrSize = obj.arrSize;
+    elSize = obj.elSize;
+    servCount = obj.servCount;
+    zero = 0;
+    p_mu_stat = obj.p_mu_stat;
+    p_n_stat = (double**)malloc(sizeof(double*) * arrSize);
+    //в цикле копируем все массивы
+    for (unsigned int k = 0; k < arrSize; k++) {
+        p_n_stat[k] = (double*)malloc(computeElementsNumber(k) * sizeof(double));
+        memcpy(p_n_stat[k], obj.p_n_stat[k], computeElementsNumber(k) * sizeof(double));
+    }
+}
+
 Phase::Phase()
 {
     elSize = 0;
-    elCount = 0;
     zero = 0;
     servCount = 0;
+    arrSize = 0;
+    p_n_stat = NULL;
 }
 
 Phase::Phase(uint8_t serversCount)
 {
     elSize = this->pow(serversCount, serversCount);
-    elCount = 0;
     zero = 0;
     servCount = serversCount;
+    arrSize = 0;
+    p_n_stat = NULL;
 }
 
-void Phase::doppelgang(const Phase& obj)
+void Phase::deleteArr()
 {
-    zero = 0;
-    servCount = obj.servCount;
-    elSize = obj.elSize;
-    elCount = obj.elCount;
-    p_mu_stat = obj.p_mu_stat;
-
-    if (elSize != 0) {
-        // Скопируем массив
-        unsigned int k = 1;
-        p_n_stat.reserve(elCount);
-        for (; k < servCount; k++)
-        {
-            unsigned int memSize = sizeof(double) * pow(k, (uint8_t)k);
-            double* tmp = (double*)malloc(memSize);
-            memcpy(tmp, obj.p_n_stat[k], memSize);
-            p_n_stat[k] = tmp;
-        }
-        for (; k < elCount; k++)
-        {
-            unsigned int memSize = sizeof(double) * elSize;
-            double* tmp = (double*)malloc(memSize);
-            memcpy(tmp, obj.p_n_stat[k], memSize);
-            p_n_stat[k] = tmp;
-        }
+    for (unsigned int k = 1; k < arrSize; k++) {
+        free(p_n_stat[k]);
     }
-}
-
-Phase::Phase(const Phase& obj)
-{
-    doppelgang(obj);
-}
-
-Phase& Phase::operator=(const Phase& right)
-{
-    this->~Phase();
-    doppelgang(right);
-    return(*this);
+    free(p_n_stat);
 }
 
 Phase::~Phase()
 {
-    for (unsigned int k = 1; k < elCount; k++) {
-        free(p_n_stat[k]);
-    }
-    p_n_stat.clear();
+    deleteArr();
 }
 
 inline unsigned int Phase::pow(unsigned int a, uint8_t p)
@@ -100,14 +99,15 @@ inline double& Phase::operator()(unsigned int x, unsigned int y)
         zero = 0;
         return zero;
     }
-
-    if (x >= elCount) {
-        while (elCount <= x)
-        {
-            double* tmp = (double*)calloc(maxY, sizeof(double));
-            p_n_stat.push_back(tmp);
-            elCount++;
+    if (x >= arrSize) {
+        double** tmp = (double**)malloc(sizeof(double*) * ((size_t)x + 1));
+        memcpy(tmp, p_n_stat, arrSize * sizeof(double*));
+        for (unsigned int k = arrSize; k <= x; k++) {
+            tmp[k] = (double*)calloc(computeElementsNumber(k), sizeof(double));
         }
+        free(p_n_stat);
+        p_n_stat = tmp;
+        arrSize = x + 1;
     }
     return p_n_stat[x][y];
 }
@@ -115,23 +115,28 @@ inline double& Phase::operator()(unsigned int x, unsigned int y)
 void Phase::print()
 {
     for (unsigned int i = 0; i < elSize; i++) {
-        for (unsigned int k = 0; k < elCount; k++) {
+        for (unsigned int k = 0; k < arrSize; k++) {
             cout << (*this)(k, i) << "\t";
         }
-        cout << endl;
+        cout << "|" << endl;
     }
 }
 
 void Phase::addTime(uint8_t* arr, unsigned int x, double time)
 {
     // Вычислим позицию состояния в столбце
-    uint64_t bound = servCount > x ? x : servCount;
+    int64_t bound = servCount > x ? x : servCount;
     unsigned int y = 0;
-    for (uint_fast64_t k = 0; k < (bound - 1); k++) {
+    for (int_fast64_t k = 0; k < (bound - 1); k++) {
         y += (arr[k] - 1);
         y *= servCount;
     }
     y += arr[bound - 1] - 1;
     // Добавим время в нужное место
     (*this)(x, y) += time;
+}
+
+unsigned int Phase::getColumnSize()const
+{
+    return elSize;
 }

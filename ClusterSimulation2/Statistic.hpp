@@ -3,6 +3,7 @@
 #include <vector>
 #include "DynamicArray.hpp"
 
+
 class Phase
 {
 private:
@@ -11,13 +12,15 @@ private:
     uint8_t servCount;
     // Размер столбца матрицы
     unsigned int elSize;
-    // количество столбцов в матрице
-    unsigned int elCount;
-    std::vector<double*> p_n_stat;
-    inline static unsigned int pow(unsigned int a, uint8_t p);
+    // Количество элементов в векторе
+    unsigned int arrSize;
+    // массив
+    double** p_n_stat;
+    // и его удаление.
+    void deleteArr();
 
-    // Превращает этот объект в копию переданного. ACHTUNG: будет утечка памяти, если this не пустое.
-    void doppelgang(const Phase& obj);
+    // Возведение в степень
+    inline static unsigned int pow(unsigned int a, uint8_t p);
 
 public:
     explicit Phase(uint8_t serversCount);
@@ -26,6 +29,7 @@ public:
 
     // Конструктор  копирования
     Phase(const Phase& obj);
+
     // Оператор приравнивания
     Phase& operator=(const Phase& right);
 
@@ -36,6 +40,9 @@ public:
 
     // Вычисление позиции в массиве по вектору состояния
     void addTime(uint8_t* arr, unsigned int x, double time);
+
+    // Количество элементов в столце матрицы
+    unsigned int getColumnSize() const;
 
     // Вероятность того, что система будет находится в указанном режиме работы
     // TODO: от этого избавимся, поскольку это равно сумме по всем p_n

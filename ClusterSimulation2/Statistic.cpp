@@ -15,22 +15,34 @@ void Cluster::calculateMetrics()
         stat->leaveApplicationsCount++;
     }
 
+    // –аспределение количества за€вок в системе
     stat->p_x_stat[stat->p][(unsigned int)(eventsB->size() + queue->size())] += eventsB->passedTime();
     
+    // ќпределим какой длины будет наш вектор, содержащий текущее состо€ние
+    // ≈сли сейчас наступило событие прихода, то число за€вок в обработке будет равно eventsB->size(), поскольку добавитс€ 
+    // за€вка в обработку может только после этой функции. ≈сли это был уход, то число за€вок в обработке равно 
+    // eventsB->size() - 1. Ќо, с учЄтом только что ушедшей за€вки их число равно eventsB->size().
+    unsigned int vecLen = eventsB->size() + queue->size();
+    if (vecLen > servers)
+        vecLen = servers;
+    // «апросим вектор текущих состо€ний у таймера. Ётот вектор гарантировано будет нужной нам длины. ”дал€ть его не надо.
+    uint8_t AppsCountInVector;
+    uint8_t* tmp = eventsB->getOldestApps(AppsCountInVector);
+    // ƒоберЄм недостающих состо€ний из очереди
+    uint8_t queuePos = 0;
+    while (AppsCountInVector < vecLen) {
+        tmp[AppsCountInVector] = (*queue)[queuePos].cores;
+        AppsCountInVector++;
+        queuePos++;
+    }
+
     if (isLowMode)
     {
+        stat->p_phase_stat[0][stat->p].addTime(tmp, eventsB->size() + queue->size(), eventsB->passedTime());
         stat->p_phase_stat[0][stat->p].p_mu_stat[(unsigned int)(eventsB->size() + queue->size())] += eventsB->passedTime();
-        uint64_t k = 0;
-        // ќпределим количество за€вок в системе. ≈сли сейчас наступило событие прихода, то число за€вок в 
-        // обработке будет равно eventsB->size(). ≈сли это был уход, то число за€вок в обработке равно 
-        // eventsB->size() - 1. Ќо, с учЄтом только что ушедшей за€вки их число равно eventsB->size().
-        uint64_t appsInProcessing = (eventsB->eventId() == 0 ? eventsB->size() : eventsB->size() - 1);
-        while (k < min((uint64_t)servers, queue->size() + appsInProcessing))
-        {
-
-            k++;
-        }
+        
     }else {
+        stat->p_phase_stat[1][stat->p].addTime(tmp, eventsB->size() + queue->size(), eventsB->passedTime());
         stat->p_phase_stat[1][stat->p].p_mu_stat[(unsigned int)(eventsB->size() + (uint64_t)queue->size())] += eventsB->passedTime();
     }
 
@@ -151,10 +163,21 @@ void Statistic::finalizeCalculation()
     }
     
     // ћатрицы новой статистики
-    for (unsigned int  k = 0; k < p_x_stat[p].size(); k++) {
+    //p_phase_stat[0][p].print();
+    //cout << "***" << endl;
+    for (unsigned int  k = 1; k < p_x_stat[p].size(); k++) {
+        for (unsigned int i = 0; i < p_phase_stat[0][p].getColumnSize(); i++) {
+            p_phase_stat[0][p](k, i) /= (p_x_stat[p][k] == 0 ? 1 : p_x_stat[p][k]);
+        }
         p_phase_stat[0][p].p_mu_stat[k] /= (p_x_stat[p][k] == 0 ? 1 : p_x_stat[p][k]);
     }
-    for (unsigned int  k = 0; k < p_x_stat[p].size(); k++) {
+    //p_phase_stat[0][p].print();
+    //cout << "####" << endl;
+    //
+    for (unsigned int  k = 1; k < p_x_stat[p].size(); k++) {
+        for (unsigned int i = 0; i < p_phase_stat[1][p].getColumnSize(); i++) {
+            p_phase_stat[1][p](k, i) /= (p_x_stat[p][k] == 0 ? 1 : p_x_stat[p][k]);
+        }
         p_phase_stat[1][p].p_mu_stat[k] /= (p_x_stat[p][k] == 0 ? 1 : p_x_stat[p][k]);
     }
     for (unsigned int  k = 0; k < p_x_stat[p].size(); k++) {
@@ -273,10 +296,14 @@ void Statistic::calculatePower(double e_0, double e_l, double e_h)
         p_l = 0;
         p_h = 0;
         for (unsigned int i = 1; i < p_phase_stat[0][k].p_mu_stat.size(); i++) {
-            p_l += p_phase_stat[0][k].p_mu_stat[i] * p_x_stat[k][i];
+            for (unsigned int j = 0; j < p_phase_stat[0][k].getColumnSize(); j++) {
+                p_l += p_phase_stat[0][k](i, j) * p_x_stat[k][i];
+            }
         }
         for (unsigned int i = 1; i < p_phase_stat[1][k].p_mu_stat.size(); i++) {
-            p_h += p_phase_stat[1][k].p_mu_stat[i] * p_x_stat[k][i];
+            for (unsigned int j = 0; j < p_phase_stat[1][k].getColumnSize(); j++) {
+                p_h += p_phase_stat[1][k](i, j) * p_x_stat[k][i];
+            }
         }
         meanPower[k] = p_x_stat[k][0] * e_0 + p_l * e_l + p_h * e_h;
     }

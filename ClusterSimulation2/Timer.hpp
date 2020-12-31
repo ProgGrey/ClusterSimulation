@@ -45,10 +45,10 @@ public:
     // функция для пересчёта времени
     void recalculateTime(double newSpeed);
     //  Сколько ещё событий в списке
-    uint64_t size() const;
+    unsigned int size() const;
     // Печать всех событий (для отладки)
     void printAll();
 
     // Вернёт массив с количеством серверов, которое требуют старейшие заявки.
-    uint8_t* getOldestApps(uint64_t& appsCount);
+    uint8_t* getOldestApps(uint8_t& appsCount);
 };

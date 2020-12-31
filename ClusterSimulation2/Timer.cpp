@@ -110,7 +110,7 @@ void Timer::recalculateTime(double newSpeed)
 }
 
 //  Сколько ещё событий в списке (включая текущее ушедшее)
-uint64_t Timer::size() const
+unsigned int Timer::size() const
 {
 	if (id > 0) {
 		return events->size() + 1;
@@ -129,7 +129,7 @@ void Timer::printAll()
 	std::cout << endl;
 }
 
-uint8_t* Timer::getOldestApps(uint64_t& appsCount)
+uint8_t* Timer::getOldestApps(uint8_t& appsCount)
 {
 	if (id == 0) {
 		appsCount = 0;
@@ -138,9 +138,14 @@ uint8_t* Timer::getOldestApps(uint64_t& appsCount)
 		oldestApps[0] = id;
 	}
 	if (!events->empty()) {
+		// В этот цикл не нужно добавлять проверку на то, что мы не превыисм количество серверов,
+		// поскольку число аявок в обработке в любом случае не больше числа серверов.
 		for (auto i = events->begin(); i != events->end(); i++) {
-			oldestApps[appsCount] = i->id;
-			appsCount++;
+			// Игнорируем событие прихода.
+			if (i->id != 0) {
+				oldestApps[appsCount] = i->id;
+				appsCount++;
+			}
 		}
 	}
 	return oldestApps;
