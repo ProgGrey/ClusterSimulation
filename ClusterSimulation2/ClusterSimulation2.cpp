@@ -11,14 +11,15 @@
 
 using namespace std;
 
-void printResults(double** buf, uint64_t simulations, unsigned int intervals, const char* ms, const char *ds)
+void printResults(double** buf, uint64_t simulations, long int intervals, const char* ms, const char *ds)
 {
     // Память под матожидание и дисперсию
     double* M = new double[intervals];
     double* D = new double[intervals];
 
     // Вычислим матожидание
-    for (unsigned int k = 0; k < intervals; k++) {
+    #pragma omp parallel for
+    for (long int k = 0; k < intervals; k++) {
         M[k] = 0;
         for (int i = 0; i < simulations; i++) {
             M[k] += buf[k][i];
@@ -26,7 +27,8 @@ void printResults(double** buf, uint64_t simulations, unsigned int intervals, co
         M[k] /= simulations;
     }
     // вычислим дисперсию
-    for (unsigned int k = 0; k < intervals; k++) {
+    #pragma omp parallel for
+    for (long int k = 0; k < intervals; k++) {
         D[k] = 0;
         for (int i = 0; i < simulations; i++) {
             D[k] += (buf[k][i] - M[k]) * (buf[k][i] - M[k]);
@@ -35,12 +37,12 @@ void printResults(double** buf, uint64_t simulations, unsigned int intervals, co
     }
     //Выведим на экран:
     cerr << ms << " = c(";
-    for (unsigned int k = 0; k < intervals - 1; k++) {
+    for (long int k = 0; k < intervals - 1; k++) {
         cerr << M[k] << ", ";
     }
     cerr << M[intervals - 1] << ")\n";
     cerr << ds << " = c(";
-    for (unsigned int k = 0; k < intervals - 1; k++) {
+    for (long int k = 0; k < intervals - 1; k++) {
         cerr << D[k] << ", ";
     }
     cerr << D[intervals - 1] << ")\n";
@@ -78,7 +80,7 @@ int main()
     cin >> warmingCount;
     cout << u8"Введите длину одного интервала симуляции: ";
     cin >> intervalLen;
-    cout << u8"Введите кол-во интервалов. Статистика будет выводится по завершеню каждого интервала: ";
+    cout << u8"Введите кол-во интервалов. Статистика будет выводится по завершеню каждого интервала (за исключением распределения состояний - оно выводится только для последнего интервала): ";
     cin >> intervalCount;
 
     cout << u8"Введите кол-во серверов в кластере: ";
@@ -143,6 +145,16 @@ int main()
         Wr[k] = new double[simCounts];
     }
 
+    // Память под распределение числа пользователей в системе
+    vector<double> p_x_stat;
+    // Память под распределение фаз
+    vector<double>* phaseL;
+    vector<double>* phaseH;
+    //выделим памяти под распределение фаз(это столбцы матрицы)
+    uint64_t columnLen = Phase::pow(serversCount, (uint8_t)serversCount);
+    phaseL = new vector<double>[columnLen];
+    phaseH = new vector<double>[columnLen];
+
     // Запустим симуляцию
     Cluster cl;
     #pragma omp parallel for schedule(dynamic) private(cl)
@@ -158,6 +170,18 @@ int main()
             Tqr[i][k] = cl.meanWaitingTime[i];
             Wr[i][k] = cl.meanPower[i];
         }
+        unsigned int p_x_stat_size;
+        #pragma omp critical(updateStatisticInMainThread)
+        {
+            p_x_stat_size = cl.p_x_stat_last_pointer->сount();
+            if (p_x_stat_size > p_x_stat.size()) {
+                p_x_stat.resize(p_x_stat_size, 0.0);
+            }
+        }
+        for (unsigned int i = 0; i < p_x_stat_size; i++) {
+            #pragma omp atomic
+            p_x_stat[i] += (*cl.p_x_stat_last_pointer)[i];
+        }
         cl.init(lambda, mu_h, mu_l, p_h, p_l, (uint8_t)serversCount, p);
         cl.useAlternativeGenertors();
         cl.simulate(warmingCount, intervalLen, intervalCount);
@@ -169,15 +193,37 @@ int main()
             Tqr[i][k + simCounts / 2] = cl.meanWaitingTime[i];
             Wr[i][k + simCounts / 2] = cl.meanPower[i];
         }
+        #pragma omp critical(updateStatisticInMainThread)
+        {
+            p_x_stat_size = cl.p_x_stat_last_pointer->сount();
+            if (p_x_stat_size  > p_x_stat.size()) {
+                p_x_stat.resize(p_x_stat_size, 0.0);
+            }
+        }
+        for (unsigned int i = 0; i < p_x_stat_size; i++) {
+            #pragma omp atomic
+            p_x_stat[i] += (*cl.p_x_stat_last_pointer)[i];
+        }
     }
     
     // TODO: Надо ещё вывести распределение для системы.
-    printResults(Mqr, simCounts, intervalCount, "E[Mq]", "D[Mq]");
-    printResults(Mr, simCounts, intervalCount, "E[M]", "D[M]");
-    printResults(Sr, simCounts, intervalCount, "E[S]", "D[S]");
-    printResults(Tqr, simCounts, intervalCount, "E[Tq]", "D[Tq]");
-    printResults(Wr, simCounts, intervalCount, "E[W]", "D[W]");
+    printResults(Mqr, simCounts, intervalCount, "E_Mq", "D_Mq");
+    printResults(Mr, simCounts, intervalCount, "E_M", "D_M");
+    printResults(Sr, simCounts, intervalCount, "E_S", "D_S");
+    printResults(Tqr, simCounts, intervalCount, "E_Tq", "D_Tq");
+    printResults(Wr, simCounts, intervalCount, "E_W", "D_W");
     
+    // Распределение состояний системы
+    // Выведем распределение числа заявок в системе
+    cout << "P_x = c(";
+    for (unsigned int i = 0; i < p_x_stat.size(); i++) {
+        cout << p_x_stat[i] / simCounts << ", ";
+    }
+    cout << "0)" << endl;
+    // Выведем распределение фаз
+
+    delete[] phaseH;
+    delete[] phaseL;
     return 0;
 }
 

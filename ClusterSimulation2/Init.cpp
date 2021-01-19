@@ -28,6 +28,7 @@ void Cluster::init(double lambda, double mu_h, double mu_l, double p_h, double p
     meanProcessingTime = NULL;
     meanWaitingTime = NULL;
     meanPower = NULL;
+    p_x_stat_last_pointer = NULL;
     this->p = NULL;
     // запомним параметры симуляции
     this->lambda = lambda;

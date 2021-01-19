@@ -19,9 +19,6 @@ private:
     // и его удаление.
     void deleteArr();
 
-    // Возведение в степень
-    inline static unsigned int pow(unsigned int a, uint8_t p);
-
 public:
     explicit Phase(uint8_t serversCount);
     Phase();
@@ -50,6 +47,9 @@ public:
 
     // Количество элементов в массиве
     unsigned int size() const;
+
+    // Целочисленное возведение в степень
+    static unsigned long int pow(unsigned int a, uint8_t p);
 };
 
 class Statistic {
@@ -129,7 +129,6 @@ public:
     */
     DynamicArraySimple<double, 100000000>* p_x_stat;
     // Распределение количества серверов, которое потребует i-я старейшая заявка
-    
     Phase* p_phase_stat[2];
 
 };

@@ -110,9 +110,9 @@ Phase::~Phase()
     deleteArr();
 }
 
-inline unsigned int Phase::pow(unsigned int a, uint8_t p)
+unsigned long int Phase::pow(unsigned int a, uint8_t p)
 {
-    unsigned int res = a;
+    unsigned long int res = a;
     while (p > 1)
     {
         if (p & 1) {
