@@ -20,6 +20,51 @@ Phase& Phase::operator=(const Phase& right)
     return *this;
 }
 
+Phase& Phase::operator*=(double right)
+{
+    for (unsigned int k = 0; k < arrSize; k++) {
+        for (unsigned int i = 0; i < computeElementsNumber(k); i++) {
+            p_n_stat[k][i] *= right;
+        }
+    }
+    return *this;
+}
+
+Phase& Phase::operator+=(const Phase& right)
+{
+    // Возможны 2 варианта:
+    if (arrSize >= right.arrSize) {
+        // Если размер текущего массива больше или равен размеру прибаляемого,
+        // то просто поэлементно складываем с текущим массивом правый массив
+        for (unsigned int k = 1; k < right.arrSize; k++) {
+            for (unsigned int i = 0; i < computeElementsNumber(k); i++) {
+                p_n_stat[k][i] += right.p_n_stat[k][i];
+            }
+        }
+    }
+    else {
+        // Если размер текущего массива меньше, мы должны выделить ему больше памяти
+        // и сложить только те элементы, которые были в левом массиве изначально.
+        // Сначала сложим теэлементы, которые уже есть:
+        for (unsigned int k = 1; k < arrSize; k++) {
+            for (unsigned int i = 0; i < computeElementsNumber(k); i++) {
+                p_n_stat[k][i] += right.p_n_stat[k][i];
+            }
+        }
+        // Теперь выделим памяти и скопируем оставшиеся элементы
+        double** tmp = (double**)malloc(sizeof(double*) * right.arrSize);
+        memcpy(tmp, p_n_stat, arrSize * sizeof(double*));
+        for (unsigned int k = arrSize; k < right.arrSize; k++) {
+            tmp[k] = (double*)malloc(computeElementsNumber(k) * sizeof(double));
+            memcpy(tmp[k], right.p_n_stat[k], computeElementsNumber(k) * sizeof(double));
+        }
+        free(p_n_stat);
+        p_n_stat = tmp;
+        arrSize = right.arrSize;
+    }
+    return *this;
+}
+
 Phase::Phase(const Phase& obj)
 {
     arrSize = obj.arrSize;

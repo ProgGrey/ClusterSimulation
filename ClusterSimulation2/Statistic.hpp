@@ -32,6 +32,10 @@ public:
 
     // Оператор приравнивания
     Phase& operator=(const Phase& right);
+    // Оператор прибавления к текущей фазе другой фазы
+    Phase& operator+=(const Phase& right);
+    // Оператор умножения всех элементов текущей фазы на константу
+    Phase& operator*=(double right);
 
     // Доступ к элементам
     double& operator()(unsigned int x, unsigned int y);
