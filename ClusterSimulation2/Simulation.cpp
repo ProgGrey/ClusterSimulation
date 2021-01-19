@@ -142,6 +142,8 @@ void Cluster::simulate(uint64_t warmingCount, uint64_t simCount, unsigned int in
     meanWaitingTime = stat->getMeanWaitingTime();
     meanPower = stat->getMeanPower();
     p_x_stat_last_pointer = &stat->p_x_stat[intervalsCount - 1];
+    p_phase_last_pointer[0] = &stat->p_phase_stat[0][intervalsCount - 1];
+    p_phase_last_pointer[1] = &stat->p_phase_stat[1][intervalsCount - 1];
 }
 
 void Cluster::calculatePower(double e_0, double e_l, double e_h)

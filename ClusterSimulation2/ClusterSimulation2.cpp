@@ -154,6 +154,8 @@ int main()
     uint64_t columnLen = Phase::pow(serversCount, (uint8_t)serversCount);
     phaseL = new vector<double>[columnLen];
     phaseH = new vector<double>[columnLen];
+    // Сколько раз мы добираись до соотвествующего столбца
+    vector<unsigned int> howManyEntered;
 
     // Запустим симуляцию
     Cluster cl;
@@ -171,16 +173,29 @@ int main()
             Wr[i][k] = cl.meanPower[i];
         }
         unsigned int p_x_stat_size;
-        #pragma omp critical(updateStatisticInMainThread)
+        #pragma omp critical(updateStatisticSizeInMainThread)
         {
             p_x_stat_size = cl.p_x_stat_last_pointer->сount();
             if (p_x_stat_size > p_x_stat.size()) {
                 p_x_stat.resize(p_x_stat_size, 0.0);
+                howManyEntered.resize(p_x_stat_size, 0);
+                for (unsigned int j = 0; j < columnLen; j++) {
+                    phaseL[j].resize(p_x_stat_size, 0.0);
+                    phaseH[j].resize(p_x_stat_size, 0.0);
+                }
             }
         }
         for (unsigned int i = 0; i < p_x_stat_size; i++) {
             #pragma omp atomic
             p_x_stat[i] += (*cl.p_x_stat_last_pointer)[i];
+            for (unsigned int j = 0; j < columnLen; j++) {
+                #pragma omp atomic
+                phaseL[j][i] += (*cl.p_phase_last_pointer[0])(i, j);
+                #pragma omp atomic
+                phaseH[j][i] += (*cl.p_phase_last_pointer[1])(i, j);
+            }
+            #pragma omp atomic
+            howManyEntered[i]++;
         }
         cl.init(lambda, mu_h, mu_l, p_h, p_l, (uint8_t)serversCount, p);
         cl.useAlternativeGenertors();
@@ -193,16 +208,29 @@ int main()
             Tqr[i][k + simCounts / 2] = cl.meanWaitingTime[i];
             Wr[i][k + simCounts / 2] = cl.meanPower[i];
         }
-        #pragma omp critical(updateStatisticInMainThread)
+        #pragma omp critical(updateStatisticSizeInMainThread)
         {
             p_x_stat_size = cl.p_x_stat_last_pointer->сount();
-            if (p_x_stat_size  > p_x_stat.size()) {
+            if (p_x_stat_size > p_x_stat.size()) {
                 p_x_stat.resize(p_x_stat_size, 0.0);
+                howManyEntered.resize(p_x_stat_size, 0);
+                for (unsigned int j = 0; j < columnLen; j++) {
+                    phaseL[j].resize(p_x_stat_size, 0.0);
+                    phaseH[j].resize(p_x_stat_size, 0.0);
+                }
             }
         }
         for (unsigned int i = 0; i < p_x_stat_size; i++) {
-            #pragma omp atomic
+        #pragma omp atomic
             p_x_stat[i] += (*cl.p_x_stat_last_pointer)[i];
+            for (unsigned int j = 0; j < columnLen; j++) {
+                #pragma omp atomic
+                phaseL[j][i] += (*cl.p_phase_last_pointer[0])(i, j);
+                #pragma omp atomic
+                phaseH[j][i] += (*cl.p_phase_last_pointer[1])(i, j);
+            }
+            #pragma omp atomic
+            howManyEntered[i]++;
         }
     }
     
@@ -220,8 +248,34 @@ int main()
         cout << p_x_stat[i] / simCounts << ", ";
     }
     cout << "0)" << endl;
-    // Выведем распределение фаз
-
+    // Выведем распределение фаз в пониженом режиме
+    cout << "P_low = rbind(\n";
+    for (long int k = 0; k < (columnLen - 1); k++) {
+        cout << "\tc(";
+        for (int i = 0; i < p_x_stat.size(); i++) {
+            cout << phaseL[k][i] / howManyEntered[i] << ", ";
+        }
+        cout << "0),\n";
+    }
+    cout << "\tc(";
+    for (int i = 0; i < p_x_stat.size(); i++) {
+        cout << phaseL[(columnLen - 1)][i] / howManyEntered[i] << ", ";
+    }
+    cout << "0))\n";
+    // Выведем распределение фаз в повышенном режиме
+    cout << "P_high = rbind(\n";
+    for (long int k = 0; k < (columnLen - 1); k++) {
+        cout << "\tc(";
+        for (int i = 0; i < p_x_stat.size(); i++) {
+            cout << phaseH[k][i] / howManyEntered[i] << ", ";
+        }
+        cout << "0),\n";
+    }
+    cout << "\tc(";
+    for (int i = 0; i < p_x_stat.size(); i++) {
+        cout << phaseH[(columnLen - 1)][i] / howManyEntered[i] << ", ";
+    }
+    cout << "0))\n";
     delete[] phaseH;
     delete[] phaseL;
     return 0;
