@@ -89,7 +89,7 @@ public:
 		return len;
 	}
 	// Вернёт кол-во элементов в массиве
-	inline unsigned int сount() const {
+	inline unsigned int count() const {
 		return elCount;
 	}
 };

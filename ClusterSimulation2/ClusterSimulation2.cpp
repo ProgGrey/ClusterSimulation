@@ -175,7 +175,7 @@ int main()
         unsigned int p_x_stat_size;
         #pragma omp critical(updateStatisticSizeInMainThread)
         {
-            p_x_stat_size = cl.p_x_stat_last_pointer->сount();
+            p_x_stat_size = cl.p_x_stat_last_pointer->count();
             if (p_x_stat_size > p_x_stat.size()) {
                 p_x_stat.resize(p_x_stat_size, 0.0);
                 howManyEntered.resize(p_x_stat_size, 0);
@@ -210,7 +210,7 @@ int main()
         }
         #pragma omp critical(updateStatisticSizeInMainThread)
         {
-            p_x_stat_size = cl.p_x_stat_last_pointer->сount();
+            p_x_stat_size = cl.p_x_stat_last_pointer->count();
             if (p_x_stat_size > p_x_stat.size()) {
                 p_x_stat.resize(p_x_stat_size, 0.0);
                 howManyEntered.resize(p_x_stat_size, 0);
