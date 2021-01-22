@@ -243,39 +243,39 @@ int main()
     
     // Распределение состояний системы
     // Выведем распределение числа заявок в системе
-    cout << "P_x = c(";
+    cerr << "P_x = c(";
     for (unsigned int i = 0; i < p_x_stat.size(); i++) {
-        cout << p_x_stat[i] / simCounts << ", ";
+        cerr << p_x_stat[i] / simCounts << ", ";
     }
-    cout << "0)" << endl;
+    cerr << "0)" << endl;
     // Выведем распределение фаз в пониженом режиме
-    cout << "P_low = rbind(\n";
+    cerr << "P_low = rbind(\n";
     for (long int k = 0; k < (columnLen - 1); k++) {
-        cout << "\tc(";
+        cerr << "\tc(";
         for (int i = 0; i < p_x_stat.size(); i++) {
-            cout << phaseL[k][i] / howManyEntered[i] << ", ";
+            cerr << phaseL[k][i] / howManyEntered[i] << ", ";
         }
-        cout << "0),\n";
+        cerr << "0),\n";
     }
-    cout << "\tc(";
+    cerr << "\tc(";
     for (int i = 0; i < p_x_stat.size(); i++) {
-        cout << phaseL[(columnLen - 1)][i] / howManyEntered[i] << ", ";
+        cerr << phaseL[(columnLen - 1)][i] / howManyEntered[i] << ", ";
     }
-    cout << "0))\n";
+    cerr << "0))\n";
     // Выведем распределение фаз в повышенном режиме
-    cout << "P_high = rbind(\n";
+    cerr << "P_high = rbind(\n";
     for (long int k = 0; k < (columnLen - 1); k++) {
-        cout << "\tc(";
+        cerr << "\tc(";
         for (int i = 0; i < p_x_stat.size(); i++) {
-            cout << phaseH[k][i] / howManyEntered[i] << ", ";
+            cerr << phaseH[k][i] / howManyEntered[i] << ", ";
         }
-        cout << "0),\n";
+        cerr << "0),\n";
     }
-    cout << "\tc(";
+    cerr << "\tc(";
     for (int i = 0; i < p_x_stat.size(); i++) {
-        cout << phaseH[(columnLen - 1)][i] / howManyEntered[i] << ", ";
+        cerr << phaseH[(columnLen - 1)][i] / howManyEntered[i] << ", ";
     }
-    cout << "0))\n";
+    cerr << "0))\n";
     delete[] phaseH;
     delete[] phaseL;
     return 0;
