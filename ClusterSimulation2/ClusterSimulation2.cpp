@@ -52,8 +52,8 @@ void printResults(double** buf, uint64_t simulations, long int intervals, const 
 
 int main()
 {
-    cerr << fixed;
-    cerr.precision(6);
+    //cerr << fixed;
+    cerr.precision(9);
     // Параметры симуляции
     unsigned int warmingCount, intervalLen, intervalCount, simCounts;
     // Колво потоков
