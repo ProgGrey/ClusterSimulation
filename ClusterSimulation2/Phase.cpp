@@ -3,7 +3,7 @@
 
 using namespace std;
 
-#define computeElementsNumber(x) (((x) >= (servCount)) ? (elSize) : (pow(x,x)))
+#define computeElementsNumber(x) (((x) >= (servCount)) ? (elSize) : (Phase::pow(servCount,x)))
 
 Phase& Phase::operator=(const Phase& right)
 {
@@ -133,7 +133,7 @@ double& Phase::operator()(unsigned int x, unsigned int y)
 {
     unsigned int maxY;
     if (x < servCount) {
-        maxY = pow(x, (uint8_t)x);
+        maxY = pow(servCount, (uint8_t)x);
     }
     else {
         maxY = elSize;
