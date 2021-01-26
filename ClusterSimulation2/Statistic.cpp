@@ -159,7 +159,6 @@ void Statistic::finalizeCalculation()
     for (unsigned int  k = 0; k < p_x_stat[p].size(); k++) {
         p_x_stat[p][k] /= simulationTime[p];
     }
-
     // Среднее число заявок в очереди
     meanAppsInQueue[p] = 0;
     for (unsigned int k = 0; k < PqLow[p].size(); k++) {
@@ -211,7 +210,7 @@ void printArray(const char *name, double* arr, uint64_t maxIndex)
 
 void Statistic::printAll()
 {
-    printArray("simulationTime", simulationTime, maxIntervalIndex);
+    //printArray("simulationTime", simulationTime, maxIntervalIndex);
     printArray("meanProcessingTime", meanProcessingTime, maxIntervalIndex);
     printArray("meanWaitingTime", meanWaitingTime, maxIntervalIndex);
     printArray("meanAppsInQueue", meanAppsInQueue, maxIntervalIndex);

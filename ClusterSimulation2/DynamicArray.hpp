@@ -11,8 +11,6 @@ class DynamicArraySimple
 private:
 	// Длина буфера
 	unsigned int len;
-	// Реальный размер массива (по максимальному индексу, по которому происходило обращение)
-	unsigned int elCount;
 	// Буфер 
 	T* buffer;
 public:
@@ -22,7 +20,6 @@ public:
 		buffer = new T[1];
 		memset(buffer, 0, sizeof(T));
 		len = 1;
-		elCount = 1;
 	}
 
 	~DynamicArraySimple()
@@ -46,7 +43,6 @@ public:
 				delete[] buffer;
 				buffer = tmp;
 				len = newLen;
-				elCount = index + 1;
 				return buffer[index];
 			} else {
 				throw std::bad_array_new_length();
@@ -60,7 +56,6 @@ public:
 	DynamicArraySimple<T, maxSize>(const DynamicArraySimple<T, maxSize>& initialize)
 	{
 		// Создаём копию объекта
-		elCount = initialize.elCount;
 		len = initialize.len;
 		delete[] buffer;
 		buffer = new T[len];
@@ -75,7 +70,6 @@ public:
 			return *this;
 		}
 		// Создаём копию объекта
-		elCount = right.elCount;
 		len = right.len;
 		delete[] buffer;
 		buffer = new T[len];
@@ -90,6 +84,12 @@ public:
 	}
 	// Вернёт кол-во элементов в массиве
 	inline unsigned int count() const {
-		return elCount;
+		unsigned int elCount;
+		for (elCount = len - 1; elCount != 0; elCount--) {
+			if (buffer[elCount] != 0) {
+				break;
+			}
+		}
+		return elCount + 1;
 	}
 };
